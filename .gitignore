@@ -1,0 +1,42 @@
+# --- Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+build/
+dist/
+
+# --- Entornos virtuales
+# Con comodin a proposito: basta que alguien llame al suyo `.venv311` o
+# `venv3.12` para subir miles de ficheros de dependencias sin enterarse.
+.venv*/
+venv*/
+env/
+ENV/
+**/site-packages/
+**/pyvenv.cfg
+
+# --- Salidas del modelo
+# Todo lo que escriben las simulaciones, los mapas y las figuras va aqui.
+resultados/
+*.parcial.csv
+*.csv.tmp
+
+# --- Redes intermedias de la reconstruccion
+# `Reconstruir la red` las vuelve a crear en data/redes/; ninguna opcion las
+# lee. Las cuatro que SI van al repositorio son las de los puntos de
+# operacion (scenario, blackout, punta) y la red completa que dibujan los
+# mapas.
+data/redes/iberia_complete_network.nc
+data/redes/iberia_final_network.nc
+data/redes/iberia_fixed_network.nc
+
+# --- Certificados que anade el mapa estatico tras un proxy corporativo
+.ca_bundle.pem
+
+# --- Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

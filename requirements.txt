@@ -1,0 +1,24 @@
+# Modelo del sistema electrico iberico en PyPSA
+# Requiere Python 3.11 o superior (PyPSA 1.x no publica ruedas para 3.10).
+
+pypsa>=1.3,<2.0
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+networkx>=3.0
+matplotlib>=3.7
+
+# Lectura y escritura de las redes .nc
+netCDF4>=1.6
+
+# MILP del deslastre consciente del BTM: el modelador y su solver
+linopy>=0.4
+highspy>=1.5
+
+# Mapa interactivo
+folium>=0.15
+
+# OPCIONAL, no se instala por defecto: capa de fondo cartografica del mapa
+# estatico de la red. Arrastra GDAL/rasterio, que no siempre se instala a la
+# primera. Sin el, el mapa se dibuja igual, sin fondo.
+#   pip install contextily
