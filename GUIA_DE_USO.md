@@ -1,34 +1,36 @@
 # Guía de uso del modelo ibérico
 
-Esta guía explica el menú opción por opción: qué hace cada una, qué pregunta,
-cuánto tarda y cómo se lee lo que devuelve. Para instalar el modelo, ver el
-[README](README.md).
+Esta guía describe el funcionamiento del menú del modelo ibérico. Para cada opción se explica su finalidad, la información que solicita, el tiempo de ejecución aproximado y la forma de interpretar los resultados. Para consultar los requisitos e instrucciones de instalación, véase el [README](README.md).
+
+Para iniciar el menú, ejecutar desde la raíz del repositorio:
 
 ```bash
 python menu.py
 ```
 
+---
+
 ## Índice
 
-1. [Lo primero: el punto de operación](#1-lo-primero-el-punto-de-operación)
-2. [Cómo se navega el menú](#2-cómo-se-navega-el-menú)
-3. [Sobre este punto: simular](#3-sobre-este-punto-simular)
-4. [Sobre este punto: consultar](#4-sobre-este-punto-consultar)
-5. [Sobre este punto: analizar](#5-sobre-este-punto-analizar)
-6. [Sobre este punto: mapas](#6-sobre-este-punto-mapas)
-7. [Sobre el modelo entero](#7-sobre-el-modelo-entero)
-8. [Antes de citar una cifra](#8-antes-de-citar-una-cifra)
+1. [Selección del punto de operación](#1-selección-del-punto-de-operación)
+2. [Navegación por el menú](#2-navegación-por-el-menú)
+3. [Simulaciones sobre el punto de operación](#3-simulaciones-sobre-el-punto-de-operación)
+4. [Consultas sobre el punto de operación](#4-consultas-sobre-el-punto-de-operación)
+5. [Análisis sobre el punto de operación](#5-análisis-sobre-el-punto-de-operación)
+6. [Mapas del sistema](#6-mapas-del-sistema)
+7. [Operaciones sobre el modelo completo](#7-operaciones-sobre-el-modelo-completo)
+8. [Consideraciones antes de citar resultados](#8-consideraciones-antes-de-citar-resultados)
 9. [Problemas frecuentes](#9-problemas-frecuentes)
 
 ---
 
-## 1. Lo primero: el punto de operación
+## 1. Selección del punto de operación
 
-Al arrancar, el menú pregunta sobre qué punto de operación trabajar. La
-elección vale para **toda la sesión**: todas las opciones del bloque *sobre
-este punto* corren sobre él.
+Al iniciar el menú, se solicita seleccionar el punto de operación sobre el que se realizarán los análisis. La selección se mantiene durante **toda la sesión** y se aplica a las opciones agrupadas bajo la sección *Sobre este punto de operación*.
 
-```
+El menú presenta los siguientes puntos:
+
+```text
 SOBRE QUE PUNTO DE OPERACION QUIERES TRABAJAR
   * 1) 28-abr-2025 12:33 (apagon iberico)
        RECONSTRUIDO de fuentes secundarias; el N-1 corre sobre un caso base LIMPIO
@@ -39,360 +41,295 @@ SOBRE QUE PUNTO DE OPERACION QUIERES TRABAJAR
     q) salir
 ```
 
-### Los tres puntos no tienen el mismo respaldo
+### Respaldo de los puntos de operación
 
-| Punto | De dónde sale | Para qué sirve |
+Los tres puntos de operación tienen distinto origen y nivel de respaldo. Esta distinción debe tenerse en cuenta al interpretar y comparar los resultados.
+
+| Punto | Procedencia | Uso previsto |
 |---|---|---|
-| **Apagón** (28-abr-2025, 12:33) | El mix de generación y los intercambios publicados para ese instante. Su dinámica se contrasta contra la frecuencia medida aquel día | El punto de referencia: el BTM, el deslastre y el N-1 descansan sobre él |
-| **Punta** (15-ene, 20-21 h) | Las cuotas medias de enero por tecnología. Solar cero: es de noche | El caso de inercia alta, para contrastar con el apagón |
-| **Genérico** | Una exportación sintética de 3.000 MW con despacho uniforme | Pruebas y comparación; no representa ninguna hora real |
+| **Apagón** (28-abr-2025, 12:33) | Reconstrucción basada en la combinación de generación y los intercambios publicados para ese instante. Su respuesta dinámica se contrasta con la frecuencia medida ese día. | Punto de referencia para los análisis de BTM, deslastre y contingencias N-1. |
+| **Punta** (15-ene, 20-21 h) | Escenario derivado de las cuotas medias de generación por tecnología correspondientes a enero. La generación solar es nula por tratarse de un periodo nocturno. | Escenario de elevada inercia para contrastar sus resultados con los del apagón. |
+| **Genérico** | Escenario sintético de exportación de 3.000 MW con despacho uniforme. | Pruebas y comparaciones metodológicas. No representa una hora real de operación. |
 
-La línea de color bajo cada uno es su aval, y se repite arriba de todas las
-pantallas del menú para que ninguna salida acabe comparada con otra que no le
-corresponde.
+El indicador de respaldo asociado a cada punto se muestra en la pantalla de selección y se repite en la cabecera de las pantallas del menú. Esto permite identificar el escenario al que corresponde cada resultado y evitar comparaciones entre puntos de operación distintos sin tener en cuenta sus diferencias.
 
 ---
 
-## 2. Cómo se navega el menú
+## 2. Navegación por el menú
 
-El menú se parte en dos bloques:
+El menú está organizado en dos bloques:
 
-- **Sobre este punto de operación** — corre sobre el punto elegido. Cuatro
-  grupos: *Simular*, *Consultar*, *Analizar* y *Mapas*.
-- **Sobre el modelo entero** — da lo mismo el punto elegido. Al lado de cada
-  opción figura sobre qué corre de verdad (`apagon y punta`, `escenario
-  generico`…).
+- **Sobre este punto de operación:** agrupa las opciones que se ejecutan sobre el punto seleccionado. Incluye las secciones *Simular*, *Consultar*, *Analizar* y *Mapas*.
+- **Sobre el modelo entero:** contiene operaciones que no dependen del punto activo o que se ejecutan sobre varios escenarios. El menú indica junto a cada opción los puntos de operación que utiliza, por ejemplo, `apagon y punta` o `escenario generico`.
 
-Las opciones que no tienen sentido en un punto **no aparecen**, y al pie del
-menú se lista cuáles faltan y por qué. Por eso **la numeración cambia de un
-punto a otro**: el apagón tiene 24 opciones, la punta 20 y el genérico 21. Las
-secciones de esta guía siguen los nombres, no los números.
+Las opciones que no son aplicables al punto seleccionado **no se muestran**. El menú identifica al final de la pantalla las opciones omitidas y explica el motivo. Por esta razón, la numeración puede variar según el punto de operación: el escenario del apagón presenta 24 opciones, la punta 20 y el escenario genérico 21. Esta guía se organiza por el nombre de cada funcionalidad y no por su número en el menú.
 
-| Tecla | Qué hace |
+| Tecla | Función |
 |---|---|
-| un número | entra en la opción |
-| `p` | cambia de punto de operación sin salir |
-| `q` | sale |
-| `Ctrl-C` | interrumpe la opción en curso y vuelve al menú |
+| Número | Abre la opción correspondiente. |
+| `p` | Permite cambiar el punto de operación sin salir del menú. |
+| `q` | Cierra el menú. |
+| `Ctrl-C` | Interrumpe la opción en ejecución y regresa al menú. |
 
-Al entrar en cualquier opción se imprimen, antes de correr, **sobre qué
-corre** y una explicación de lo que va a hacer. Las que lanzan un módulo
-enseñan además la orden exacta (`$ python -m iberia.…`), que se puede copiar
-para repetirla fuera del menú.
+Antes de ejecutar una opción, el menú indica el punto de operación sobre el que trabajará y presenta una descripción de la tarea. Las opciones que ejecutan un módulo independiente muestran también el comando correspondiente (`python -m iberia.…`), que puede utilizarse para repetir la ejecución directamente desde la terminal.
 
-### Dónde quedan las salidas
+### Ubicación de los resultados
 
-Todo lo que escriben las opciones va a `resultados/`, con el punto de
-operación en el nombre del fichero. Los mapas, en `resultados/mapas/` y
-`resultados/visualizaciones/`.
+Los archivos generados por las opciones se almacenan en `resultados/` e incluyen el punto de operación en su nombre. Los mapas se guardan en `resultados/mapas/` y `resultados/visualizaciones/`.
 
-### Por qué la primera consulta tarda
+### Tiempo de la primera consulta
 
-Las opciones de *Consultar* leen el **caso base resuelto**: el flujo de
-potencia AC con los límites de reactivo de cada máquina. Resolverlo cuesta
-alrededor de un minuto en el apagón y varios en la punta, donde el lazo de
-reactivo tarda más en estabilizarse. El menú lo resuelve **una vez por
-sesión** y lo guarda en memoria: a partir de la segunda consulta todo es
-inmediato. Cambiar de punto con `p` lo descarta.
+Las opciones de *Consultar* utilizan el **caso base resuelto**, correspondiente al flujo de potencia AC con los límites de potencia reactiva de cada máquina. La resolución tarda aproximadamente un minuto para el escenario del apagón y varios minutos para el escenario de punta, debido al tiempo adicional que requiere la estabilización del lazo de límites reactivos.
+
+El menú resuelve el caso base una sola vez por sesión y conserva el resultado en memoria. Por ello, las consultas posteriores se ejecutan de forma prácticamente inmediata. Al cambiar de punto de operación mediante `p`, el resultado almacenado se descarta y debe resolverse el nuevo caso base.
 
 ---
 
-## 3. Sobre este punto: simular
+## 3. Simulaciones sobre el punto de operación
 
 ### Simular contingencias (N-1)
 
-Saca de servicio cada línea, transformador y generador, y mide **lo que la
-contingencia añade** sobre el caso base: sobrecargas nuevas, cuánto empeora la
-cargabilidad máxima y cuánta carga ibérica queda aislada. La métrica es
-incremental a propósito: contada en absoluto, casi cualquier contingencia
-heredaría las sobrecargas que el caso base ya tiene.
+Esta opción desconecta individualmente cada línea, transformador y generador para evaluar el efecto de cada contingencia respecto al caso base. Entre las variables analizadas se encuentran las sobrecargas adicionales, la variación de la cargabilidad máxima y la cantidad de carga ibérica que queda aislada.
 
-Pregunta qué hacer:
+La evaluación utiliza una **métrica incremental**: cuantifica los cambios atribuibles a la contingencia y no únicamente los valores absolutos posteriores a ella. De esta forma, las sobrecargas que ya existen en el caso base no se atribuyen automáticamente a la salida del elemento.
 
-| Camino | Qué hace | Cuánto tarda |
+El menú permite seleccionar uno de los siguientes procedimientos:
+
+| Modalidad | Descripción | Tiempo aproximado |
 |---|---|---|
-| **Barrido completo** | Las 3.277 contingencias. Las ramas que aíslan carga se resuelven por topología; los generadores pequeños, por balance; el resto, unas 2.000, con flujo AC | ~34 min en el apagón, ~2 h 20 en la punta |
-| **Solo el plan** | Cuántas contingencias hay de cada clase y cuánto costaría el barrido | segundos |
-| **Una contingencia concreta** | La salida de un elemento elegido por nombre (`L0690`, `G0911`…) | segundos a un minuto |
-| **El ranking** | Las más graves del último barrido | inmediato |
+| **Barrido completo** | Evalúa las 3.277 contingencias. Las ramas que aíslan carga se analizan mediante topología; los generadores pequeños, mediante balance de potencia; y aproximadamente 2.000 contingencias restantes, mediante flujo AC. | Aproximadamente 34 minutos en el escenario del apagón y 2 h 20 min en el escenario de punta. |
+| **Solo el plan** | Informa el número de contingencias de cada clase y estima el costo computacional del barrido. | Segundos. |
+| **Una contingencia concreta** | Evalúa la salida de un elemento seleccionado por su nombre, por ejemplo, `L0690` o `G0911`. | De algunos segundos a un minuto. |
+| **El ranking** | Muestra las contingencias más severas del último barrido disponible. | Inmediato, si ya existe un barrido. |
 
-El barrido completo **pide confirmación**, porque al terminar sustituye el
-barrido guardado de ese punto. Si se interrumpe, el guardado no se toca: el
-progreso va a un fichero `.parcial.csv` aparte.
+El barrido completo solicita confirmación porque, al finalizar correctamente, sustituye el barrido guardado para ese punto de operación. Si la ejecución se interrumpe, el resultado anterior se conserva y el progreso parcial se escribe en un archivo independiente con extensión `.parcial.csv`.
 
-El ranking usa el barrido más reciente que hayas corrido tú. Si todavía no has
-corrido ninguno, usa el **barrido de referencia** que trae el repositorio en
-`data/referencia/`, y lo dice en pantalla. En la punta avisa de que el
-elemento crítico es siempre el mismo (`L1357`): ver
-[Antes de citar una cifra](#8-antes-de-citar-una-cifra).
+El ranking utiliza el barrido más reciente ejecutado por el usuario. Si todavía no se ha realizado un barrido, utiliza el **barrido de referencia** incluido en `data/referencia/` e informa de ello en pantalla.
+
+Para el escenario de punta, el menú advierte que el elemento crítico identificado es siempre el mismo (`L1357`). Esta condición afecta a la interpretación de la cargabilidad absoluta. La limitación se explica en [Consideraciones antes de citar resultados](#8-consideraciones-antes-de-citar-resultados).
 
 ### Dinámica de frecuencia (P.O. 1.6)
 
-Integra la ecuación de oscilación tras perder generación de golpe y dispara
-los escalones del esquema español de deslastre por mínima frecuencia.
-Pregunta:
+Esta opción integra la ecuación de oscilación después de una pérdida súbita de generación y simula la actuación de los escalones del esquema español de deslastre por mínima frecuencia, definido en el Procedimiento de Operación P.O. 1.6.
 
-1. **Los MW que se pierden** (por defecto 2.000).
-2. **El esquema de deslastre:**
-   - *P.O. 1.6 completo*: los seis escalones. Los dos primeros, a 49,5 y
-     49,3 Hz, desconectan **grupos de bombeo**; los cuatro siguientes, de 49,0 a
-     48,0 Hz, desconectan **clientes**.
-   - *Sin los escalones de bombeo*: solo los cuatro generales. Es la forma que
-     tiene el esquema colombiano, y la que hay que usar para comparar los dos
-     sistemas.
-   - *Desactivado*.
+El menú solicita los siguientes parámetros:
 
-Devuelve el nadir (o el instante del colapso, si colapsa), el RoCoF inicial,
-lo que aporta la regulación primaria, los MW de clientes deslastrados y el
-bombeo soltado, y la hora de disparo de cada escalón. Tarda un par de
-segundos.
+1. **Potencia de generación perdida:** valor en MW que se desconecta. El valor predeterminado es 2.000 MW.
+2. **Esquema de deslastre:** permite seleccionar una de estas alternativas:
+   - **P.O. 1.6 completo:** considera los seis escalones. Los dos primeros, a 49,5 y 49,3 Hz, desconectan grupos de bombeo; los cuatro siguientes, entre 49,0 y 48,0 Hz, desconectan clientes.
+   - **Sin los escalones de bombeo:** considera únicamente los cuatro escalones generales. Esta configuración se utiliza para comparar el comportamiento con esquemas que no incluyen los escalones específicos de bombeo, como el esquema colombiano considerado en el estudio.
+   - **Desactivado:** no aplica los escalones de deslastre.
 
-Un ejemplo de lectura, sobre el apagón y 2.000 MW: con el esquema completo
-**solo dispara el escalón de bombeo** y el nadir queda en 49,5 Hz; sin él, el
-mismo evento llega a 49,0 Hz y **corta 4.050 MW de clientes**.
+La simulación informa el nadir de frecuencia o, si se produce el colapso, el instante en que ocurre; el RoCoF inicial; la contribución de la regulación primaria; la potencia de clientes deslastrada; la potencia de bombeo desconectada; y el instante de actuación de cada escalón. El tiempo de ejecución es de unos segundos.
 
-### Deslastre con BTM: MILP frente al proporcional
+Como referencia, para el escenario del apagón y una pérdida de 2.000 MW, el esquema completo activa únicamente el escalón de bombeo y el nadir alcanza 49,5 Hz. Al desactivar los escalones de bombeo, el mismo evento alcanza 49,0 Hz y se desconectan 4.050 MW de clientes.
 
-El algoritmo central del modelo. Reparte la generación detrás del contador por
-las barras, desconecta de golpe la parte conectada por inversor, y resuelve un
-MILP que asigna barras a los escalones del P.O. 1.6 sabiendo cuánta generación
-embebida **sana** se llevaría por delante cada corte. Después lo compara con el
-reparto proporcional del esquema regulado, **a MW desconectados iguales**.
+### Deslastre con BTM: MILP frente al reparto proporcional
 
-Pregunta qué porcentaje del BTM conectado por inversor se desconecta (por
-defecto el 80 %). Tarda unos segundos y escribe la comparación en
-`resultados/comparacion_deslastre_<punto>.csv` y la traza de frecuencia en
-`resultados/visualizaciones/`.
+Esta opción implementa el algoritmo de deslastre que considera la generación detrás del contador (*Behind-the-Meter*, BTM). El modelo distribuye la generación BTM entre las barras, simula la desconexión súbita de la fracción conectada mediante inversores y resuelve un problema de optimización lineal entera mixta (MILP).
+
+El MILP asigna las barras a los escalones del P.O. 1.6 teniendo en cuenta cuánta generación BTM permanece conectada después de la desconexión inicial y podría perderse como consecuencia adicional del deslastre. El modelo identifica esta fracción como **generación embebida sana**. El resultado se compara con el reparto proporcional del esquema regulado, utilizando como criterio una misma potencia total desconectada.
+
+El menú solicita el porcentaje de BTM conectado mediante inversores que se desconecta. El valor predeterminado es 80 %.
+
+La ejecución tarda unos segundos y genera:
+
+- La comparación de los métodos en `resultados/comparacion_deslastre_<punto>.csv`.
+- La traza de frecuencia en `resultados/visualizaciones/`.
 
 ### Cascada BTM multironda
 
-No supone que el sistema aguanta el primer golpe: encadena la pérdida de
-generación con la caída del BTM y deja correr la frecuencia hasta que el
-sistema se estabiliza o colapsa. Repite el cálculo para distintas
-penetraciones de BTM y distintos instantes de desconexión, que es lo que dice
-**cuánto depende el resultado** de esos supuestos. Tarda unos segundos.
+Esta opción analiza una secuencia de eventos en lugar de limitarse a una única perturbación. Encadena la pérdida de generación con la desconexión de BTM y calcula la evolución de la frecuencia hasta que el sistema se estabiliza o colapsa.
 
-### Validación contra la traza real del 28-A
+El procedimiento se repite para diferentes niveles de penetración BTM y distintos instantes de desconexión. De esta manera, permite evaluar la sensibilidad de los resultados frente a estos supuestos. El tiempo de ejecución es de unos segundos.
 
-Solo en el apagón. Alimenta el modelo con el evento real documentado y compara
-su frecuencia, segundo a segundo, con la que registró el Fraunhofer ISE en
-Málaga. Es la única medida independiente contra la que se contrasta la
-dinámica. Tarda unos segundos.
+### Validación frente a la traza de frecuencia del 28 de abril
 
-Lo que enseña: el modelo reproduce la caída medida y **no colapsa por
-frecuencia, igual que el sistema real**. El 28 de abril la frecuencia solo cayó
-0,75 Hz antes de que saltara la interconexión con Francia.
+Esta opción está disponible únicamente para el escenario del apagón. Utiliza el evento documentado y compara la frecuencia simulada por el modelo, segundo a segundo, con el registro del Fraunhofer ISE en Málaga. Esta es la medición independiente utilizada para contrastar la respuesta dinámica del modelo.
+
+La salida permite evaluar la correspondencia entre la caída de frecuencia simulada y la registrada. En la reconstrucción descrita, el modelo no presenta colapso por frecuencia, en concordancia con el comportamiento indicado para el sistema real. El 28 de abril de 2025, la frecuencia descendió 0,75 Hz antes de que se desconectara la interconexión con Francia.
 
 ---
 
-## 4. Sobre este punto: consultar
+## 4. Consultas sobre el punto de operación
 
 ### Resumen del sistema
 
-Las cifras del punto de una ojeada: tamaño de la red, generación, demanda,
-exportación y pérdidas ibéricas (separadas: Francia es condición de contorno y
-no entra), rango de tensión, cargabilidad máxima, inercia, reserva y la mezcla
-de generación por tecnología. Avisa si algún generador no cabe en su curva de
-capacidad de reactivo.
+Presenta las principales magnitudes del punto de operación: tamaño de la red, generación, demanda, exportación y pérdidas del sistema ibérico, rangos de tensión, cargabilidad máxima, inercia, reserva y composición de la generación por tecnología.
+
+El balance mantiene separadas las magnitudes de Francia, que se representa como condición de contorno y no se incluye en los totales ibéricos. La consulta también advierte si algún generador excede su curva de capacidad de potencia reactiva.
 
 ### Buscar una barra, generador o línea
 
-Busca por texto libre (por ejemplo `ES01240` o `L1357`) y muestra lo que el
-modelo sabe del elemento: tensión, placa, carga, y cada rama conectada con su
-flujo y su cargabilidad. **Marca los nudos radiales** —los que cuelgan de la
-red por una sola rama—, que es donde suelen esconderse los problemas de control
-de tensión.
+Permite buscar elementos mediante texto libre. Por ejemplo, se pueden introducir identificadores como `ES01240` o `L1357`.
+
+La consulta muestra la información disponible para el elemento encontrado, como tensión, potencia nominal, carga y las ramas conectadas, junto con sus flujos y cargabilidades. También identifica los **nudos radiales**, es decir, aquellos conectados al resto de la red mediante una única rama. Esta información permite localizar puntos cuya conexión depende de un único elemento y que pueden requerir una revisión particular en los análisis de tensión.
 
 ### El BTM español
 
-La placa instalada de autoconsumo, el factor de producción derivado del propio
-punto de operación, lo que está produciendo, la penetración sobre la demanda,
-la fracción conectada por inversor y el reparto por región. En la punta
-nocturna dice que el autoconsumo solar no produce.
+Presenta la potencia instalada de autoconsumo, el factor de producción estimado a partir del propio punto de operación, la potencia que está produciendo, su penetración respecto a la demanda, la fracción conectada mediante inversores y su distribución regional.
+
+En el escenario de punta nocturna, la consulta indica que la generación solar de autoconsumo no produce energía.
 
 ### Balance por país (ES / PT / FR)
 
-Generación, demanda e intercambio neto de cada país, con el aviso de que
-Portugal y Francia son sistemas agregados.
+Muestra la generación, la demanda y el intercambio neto de España, Portugal y Francia. La consulta recuerda que Portugal y Francia están representados mediante sistemas agregados y no mediante sus respectivas redes internas.
 
 ### Cobertura de datos: qué es dato y qué es supuesto
 
-La procedencia de cada parámetro del modelo, en tres clases: **dato**,
-**derivado** y **supuesto**. Es la pantalla que conviene mirar antes de decidir
-cuánto peso dar a un resultado.
+Presenta la procedencia de los parámetros utilizados por el modelo y los clasifica en tres categorías:
+
+- **Dato:** información disponible directamente en las fuentes utilizadas.
+- **Derivado:** valor calculado a partir de datos de entrada o de otros parámetros.
+- **Supuesto:** valor adoptado ante la ausencia de información específica.
+
+Esta consulta permite identificar qué resultados dependen de mediciones o datos publicados y cuáles están condicionados por hipótesis del modelo.
 
 ---
 
-## 5. Sobre este punto: analizar
+## 5. Análisis sobre el punto de operación
 
 ### Umbral de penetración con inversor
 
-No se ofrece en la punta: de noche el BTM solar produce cero y el umbral no
-está definido.
+Esta opción no está disponible para el escenario de punta. Durante el periodo nocturno, la generación solar BTM es nula, por lo que no es posible definir el umbral asociado a su desconexión.
 
-A partir de qué penetración de BTM conectado por inversor una desconexión
-masiva llega a disparar el deslastre. Barre la penetración, simula la caída en
-cada punto y busca el umbral por bisección. Informa **dos umbrales**:
+El análisis determina a partir de qué nivel de penetración de BTM conectado mediante inversores una desconexión masiva provoca la activación del deslastre. Para ello, barre distintos niveles de penetración, simula la desconexión correspondiente y estima el umbral mediante el método de bisección.
 
-- el de **bombeo** (49,5 Hz), que es propio del esquema español, y
-- el **general** (49,0 Hz), el primero que corta clientes, que es **el
-  comparable** con otros sistemas.
+Se calculan dos umbrales:
 
-Y dice si el punto de operación queda por encima o por debajo. Tarda unos
-segundos.
+- **Umbral de bombeo:** corresponde a la activación del escalón de 49,5 Hz, propio del esquema español.
+- **Umbral general:** corresponde a la activación del primer escalón que desconecta clientes, a 49,0 Hz. Es el valor comparable con sistemas que no consideran los escalones específicos de bombeo.
+
+El resultado también indica si el punto de operación analizado se encuentra por encima o por debajo de cada umbral. El tiempo de ejecución es de unos segundos.
 
 ### Sensibilidad del umbral
 
-Cuánto se mueve el umbral general si cambian los supuestos: la fracción del BTM
-que cae, la fracción conectada por inversor y —la fila que más informa— qué
-pasa **sin los escalones de bombeo**. La distancia entre esa fila y la primera
-es cuánto del margen del sistema lo aporta el bombeo y no la red. Tarda unos
-segundos.
+Evalúa la variación del umbral general ante cambios en los supuestos del modelo, entre ellos la fracción de BTM que se desconecta y la proporción de generación conectada mediante inversores.
+
+La comparación incluye una condición **sin los escalones de bombeo**. La diferencia entre el umbral obtenido con el esquema completo y el obtenido sin dichos escalones permite cuantificar su contribución al margen disponible antes de activar el deslastre general. El tiempo de ejecución es de unos segundos.
 
 ### Barrido del peso lambda
 
-Solo en el apagón. El MILP de deslastre penaliza la destrucción de BTM sano con
-un peso λ; esta opción recorre ese peso. Pregunta:
+Esta opción está disponible únicamente para el escenario del apagón. El MILP de deslastre utiliza un peso de penalización, λ, asociado a la desconexión de generación BTM que no forma parte de la perturbación. Esta funcionalidad evalúa cómo varían los resultados al modificar dicho peso.
 
-- **En operación normal** (~8 min): sin evento, con el BTM simplemente
-  conectado, a varias penetraciones. Es el régimen que fija hasta dónde se
-  puede subir λ sin que el esquema deje de cumplir su objetivo.
-- **La calibración completa** (~10 min).
+El menú ofrece dos alternativas:
+
+- **Operación normal** (aproximadamente 8 minutos): analiza escenarios sin una perturbación, con el BTM conectado, para distintos niveles de penetración. Este régimen permite evaluar hasta qué valor de λ puede aumentarse la penalización sin que el esquema deje de cumplir su objetivo.
+- **Calibración completa** (aproximadamente 10 minutos): ejecuta el procedimiento completo de calibración del parámetro.
 
 ---
 
-## 6. Sobre este punto: mapas
+## 6. Mapas del sistema
 
 ### Abrir los mapas
 
-Lista los mapas del punto elegido y los del modelo entero, **cada uno con su
-fecha**, y abre el elegido (o todos, con `t`) con la aplicación del sistema.
+Esta opción presenta los mapas disponibles para el punto de operación seleccionado y los mapas generales del modelo. Cada elemento de la lista incluye su fecha de generación. Se puede abrir un mapa individual o todos mediante la tecla `t`, utilizando la aplicación asociada en el sistema.
 
-| Mapa | Qué muestra |
+| Mapa | Información presentada |
 |---|---|
-| la red por nivel de tensión | 400, 220 y 132 kV, las interconexiones y los agregados de Portugal y Francia |
-| cargabilidad de las ramas | el caso base del punto, por bandas de carga |
-| dónde está el BTM | la placa instalada de autoconsumo por barra |
-| inercia instalada | H × placa por barra, de la red de construcción |
-| la red con fondo cartográfico | lo mismo que el primero, sobre un mapa base |
-| mapa interactivo | en el navegador, con zoom; necesita internet para el fondo |
+| Red por nivel de tensión | Red de 400, 220 y 132 kV, interconexiones y sistemas agregados de Portugal y Francia. |
+| Cargabilidad de las ramas | Cargabilidad de las ramas del caso base del punto de operación, agrupada por bandas de carga. |
+| Distribución del BTM | Potencia instalada de autoconsumo por barra. |
+| Inercia instalada | Producto de la constante de inercia, H, por la potencia de placa, representado por barra a partir de la red de construcción. |
+| Red con fondo cartográfico | Representación de la red por nivel de tensión sobre un mapa base. |
+| Mapa interactivo | Visualización en el navegador con controles de zoom. Requiere conexión a internet para cargar el fondo cartográfico. |
 
-**La primera vez no existe ninguno**, porque se generan al usarse. La opción lo
-detecta y ofrece generarlos en el momento: unos segundos cada uno, salvo el de
-cargabilidad, que antes resuelve el caso base.
+Los mapas se generan bajo demanda, por lo que es posible que no existan durante la primera consulta. En ese caso, el menú lo indica y ofrece generarlos. La mayoría tarda unos segundos; el mapa de cargabilidad requiere resolver previamente el caso base.
 
-### Regenerar el mapa de carga de este punto
+### Regenerar el mapa de carga del punto activo
 
-Vuelve a dibujar la cargabilidad del punto. No existe para el escenario
-genérico.
+Vuelve a generar el mapa de cargabilidad correspondiente al punto de operación seleccionado. Esta opción no está disponible para el escenario genérico.
 
 ---
 
-## 7. Sobre el modelo entero
+## 7. Operaciones sobre el modelo completo
 
 ### Estado del modelo y cifras citadas
 
-Re-deriva en vivo las cifras principales del modelo para los dos escenarios:
-la red, el balance, las tensiones, la cargabilidad, la inercia, el BTM, el
-deslastre y el estado de los barridos N-1. Tarda varios minutos, porque resuelve
-los casos base con los límites de reactivo.
+Recalcula las principales magnitudes del modelo para los dos escenarios principales: apagón y punta. Incluye información de la red, balance de potencia, tensiones, cargabilidad, inercia, BTM, deslastre y estado de los barridos N-1.
+
+La ejecución tarda varios minutos porque resuelve los casos base aplicando los límites de potencia reactiva.
 
 ### Comprobar los verificadores
 
-Las comprobaciones de lo que no puede cambiar sin que algo esté mal: la
-impedancia de cada línea contra su impedancia característica, los seis
-escalones del P.O. 1.6, las garantías del MILP, los límites de reactivo, la
-compensación shunt y los intercambios con Portugal y Francia. Pregunta si
-correr solo las rápidas o todas (~2 min).
+Ejecuta las comprobaciones de consistencia del modelo. Entre ellas se encuentran la comparación de la impedancia de cada línea con su impedancia característica, la verificación de los seis escalones del P.O. 1.6, las garantías del MILP, los límites de potencia reactiva, la compensación shunt y los intercambios con Portugal y Francia.
 
-### Comparar los dos escenarios lado a lado
+El menú permite ejecutar únicamente las pruebas rápidas o todos los verificadores. La ejecución completa tarda aproximadamente dos minutos.
 
-Somete el apagón y la punta a la misma batería y los imprime en columnas:
-balance, tensiones, cargabilidad, inercia, la misma perturbación y el pool de
-BTM. Pregunta si incluir una muestra N-1 de seis contingencias por escenario:
-sin ella tarda ~2 min; con ella, ~37.
+### Comparar los dos escenarios
 
-### Límites de reactivo (curva de capacidad)
+Compara el escenario del apagón y el de punta aplicando el mismo conjunto de análisis. Los resultados se presentan en columnas e incluyen el balance de potencia, las tensiones, la cargabilidad, la inercia, la respuesta ante una misma perturbación y el conjunto de generación BTM considerado.
 
-Las pruebas de la curva de capacidad de cada máquina y del lazo que conmuta a
-PQ las que la exceden. Sin esos límites, el colapso de tensión sería imposible
-de observar por construcción. Corre sobre el escenario genérico. ~1 min.
+También se puede incluir una muestra N-1 de seis contingencias por escenario. Sin esta muestra, la ejecución tarda aproximadamente dos minutos; al incluirla, el tiempo aumenta a unos 37 minutos.
+
+### Límites de potencia reactiva (curva de capacidad)
+
+Ejecuta las pruebas de las curvas de capacidad de potencia reactiva de las máquinas y del procedimiento de conmutación de barras PV a PQ cuando un generador alcanza sus límites.
+
+La aplicación de estos límites es necesaria para representar las restricciones de potencia reactiva de los generadores y evaluar su efecto sobre la tensión. Sin ellos, el modelo no puede representar adecuadamente el mecanismo de pérdida de regulación de tensión asociado a la saturación de los límites reactivos.
+
+Esta opción se ejecuta sobre el escenario genérico y tarda aproximadamente un minuto.
 
 ### Compensación shunt (reactores)
 
-Las pruebas del reactor por barra que absorbe parte de la carga capacitiva de
-sus líneas. Corre sobre el escenario genérico. ~1 min.
+Ejecuta las pruebas de compensación mediante reactores conectados en barras. Estos equipos absorben parte de la potencia reactiva capacitiva asociada a las líneas. La opción se ejecuta sobre el escenario genérico y tarda aproximadamente un minuto.
 
 ### Regenerar los mapas del modelo
 
-Vuelve a dibujar los mapas que no dependen de un punto: la red, la red con
-fondo, el interactivo, la inercia instalada y el BTM.
+Vuelve a generar los mapas que no dependen de un punto de operación específico: la red, la red con fondo cartográfico, el mapa interactivo, la distribución de inercia instalada y la distribución del BTM.
 
-### Correr el proyecto entero por lotes
+### Ejecutar el proyecto completo por lotes
 
-Toda la cadena en orden de dependencias —construcción, verificaciones,
-dinámica, deslastre, barrido N-1, mapas— con un resumen al final de qué pasó y
-qué falló. Pide confirmación y pregunta si saltar los pasos caros: completa
-tarda ~1 h 30, sin los caros ~20 min. **Su primer paso reconstruye la red** y
-reescribe `data/redes/`.
+Ejecuta la cadena de procesos en el orden definido por sus dependencias: construcción, verificaciones, dinámica de frecuencia, deslastre, barrido N-1 y generación de mapas. Al finalizar, presenta un resumen de las tareas ejecutadas y de los posibles errores.
 
-### Reconstruir la red (DESTRUCTIVO)
+El menú solicita confirmación y permite omitir los pasos de mayor costo computacional. La ejecución completa tarda aproximadamente 1 h 30 min; al omitir esos pasos, el tiempo estimado es de unos 20 minutos.
 
-Rehace la red desde los CSV de origen, construye los dos puntos de operación y
-dimensiona los transformadores por el flujo real de los dos. Son cuatro pasos,
-en ese orden, y se detiene en el primero que falle. Pide confirmación. Sirve
-para comprobar que el modelo se reproduce desde los datos de origen, o para
-regenerarlo después de cambiar algo en la construcción.
+**Importante:** el primer paso reconstruye la red y sobrescribe los archivos de `data/redes/`.
+
+### Reconstruir la red (operación destructiva)
+
+Reconstruye las redes a partir de los archivos CSV de origen, genera los dos puntos de operación principales y dimensiona los transformadores a partir de los flujos calculados para ambos escenarios.
+
+El procedimiento consta de cuatro pasos ejecutados en orden y se detiene si alguno falla. Antes de comenzar, el menú solicita confirmación. Esta opción permite comprobar que el modelo puede reproducirse a partir de los datos de origen y regenerar las redes después de modificar el proceso de construcción.
 
 ### Cómo se construye cada escenario
 
-De dónde sale cada uno de los tres puntos de operación y qué aval tiene.
+Presenta la procedencia de los tres puntos de operación y el respaldo asociado a cada uno: la reconstrucción del apagón, el escenario de punta y el escenario genérico.
 
 ---
 
-## 8. Antes de citar una cifra
+## 8. Consideraciones antes de citar resultados
 
-- **El apagón es el punto de referencia.** Es el único cuya dinámica se ha
-  contrastado contra una medida real, y el único cuyo caso base N-1 no arrastra
-  problemas propios.
-- **El N-1 de la punta se lee en relativo.** Su caso base tiene un nudo radial
-  en Madrid (`L1357`) cuyo generador no puede regular tensión, y que domina la
-  cargabilidad absoluta de todas las contingencias. El ranking entre
-  contingencias sí vale; la cifra de cargabilidad, no.
-- **La inercia es por tecnología.** No hay un registro público de inercia por
-  unidad para el parque español, de modo que el nadir y el RoCoF dependen de
-  los valores por tecnología del modelo.
-- **El BTM depende de supuestos.** El efecto de su desconexión cambia con la
-  fracción que cae y con el instante en que lo hace. *Cascada BTM multironda* y
-  *Sensibilidad del umbral* existen para ver cuánto.
-- **Portugal y Francia son agregados.** Francia no debe entrar en ninguna
-  métrica del sistema ibérico; el menú ya la separa en el balance y en las
-  pérdidas.
+Antes de utilizar los resultados del modelo en un informe, presentación o publicación, es importante tener en cuenta las siguientes limitaciones:
+
+- **El escenario del apagón es el punto de referencia.** Es el único cuya respuesta dinámica se ha contrastado con una medición real de frecuencia. Además, su caso base para el análisis N-1 no presenta los problemas identificados en el escenario de punta.
+- **Los resultados N-1 de la punta deben interpretarse de forma relativa.** El caso base contiene un nudo radial en Madrid (`L1357`) cuyo generador no puede regular la tensión. Esta condición domina la cargabilidad absoluta de las contingencias. Por tanto, el orden relativo del ranking puede utilizarse para comparar contingencias, pero los valores absolutos de cargabilidad deben interpretarse con esta limitación.
+- **La inercia se estima por tecnología.** No se dispone de un registro público de inercia individual por unidad para el parque español. Por ello, los resultados de nadir y RoCoF dependen de los valores asignados por tecnología en el modelo.
+- **El efecto del BTM depende de los supuestos del escenario.** La respuesta ante su desconexión varía según la fracción de generación que se pierde y el instante en que ocurre el evento. Las opciones *Cascada BTM multironda* y *Sensibilidad del umbral* permiten estudiar esta dependencia.
+- **Portugal y Francia se representan mediante sistemas agregados.** Francia se utiliza como condición de contorno y sus magnitudes deben mantenerse separadas de los balances y métricas del sistema ibérico. Portugal forma parte de la representación agregada del sistema síncrono ibérico.
 
 ---
 
 ## 9. Problemas frecuentes
 
-**`pip install` falla al instalar PyPSA.** Casi siempre es la versión de
-Python: hace falta 3.11 o superior. Ver el [README](README.md#requisitos).
+**`pip install` falla al instalar PyPSA.** La causa más habitual es una versión de Python incompatible. El proyecto requiere Python 3.11 o superior. Consulta la sección [Requisitos del README](README.md#requisitos).
 
-**El menú dice que faltan las dependencias.** El entorno virtual no está
-activado, o no se instaló `requirements.txt` en él.
+**El menú indica que faltan dependencias.** Es posible que el entorno virtual no esté activado o que `requirements.txt` no se haya instalado dentro de ese entorno. Activa el entorno e instala las dependencias indicadas en el README.
 
-**En Windows, `Activate.ps1` da un error de *execution policy*.**
-`Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` y volver a
-intentarlo.
+**En Windows, `Activate.ps1` genera un error de `execution policy`.** Ejecuta el siguiente comando en PowerShell y vuelve a activar el entorno:
 
-**El mapa con fondo cartográfico sale sin fondo.** El fondo necesita
-`contextily`, que no se instala por defecto porque depende de GDAL. El mapa se
-dibuja igual, sin capa de fondo. Para tenerla: `pip install contextily`.
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
 
-**El mapa interactivo se ve sin fondo.** Lo descarga el navegador al abrirlo:
-hace falta internet.
+**El mapa con fondo cartográfico se genera sin fondo.** La capa de fondo requiere `contextily`, que no se instala de forma predeterminada debido a su dependencia de GDAL. El mapa se genera igualmente, pero sin la capa cartográfica. Para instalarla, ejecuta:
 
-**Las consultas en la punta tardan.** Es la primera vez de la sesión: el caso
-base de la punta tarda varios minutos en resolverse. Después es inmediato.
+```bash
+pip install contextily
+```
 
-**Interrumpí un barrido N-1 y quedó un `.parcial.csv`.** Es el progreso del
-barrido cortado. El barrido guardado no se ha tocado; el `.parcial.csv` se
-puede borrar.
+**El mapa interactivo aparece sin fondo cartográfico.** El navegador descarga esa capa al abrir el mapa, por lo que se necesita conexión a internet.
+
+**Las consultas del escenario de punta tardan varios minutos.** La primera consulta de la sesión requiere resolver el caso base con los límites de potencia reactiva. Debido al tiempo que necesita este proceso, la primera ejecución puede tardar varios minutos. Las consultas posteriores reutilizan el caso resuelto y se ejecutan más rápido.
+
+**Se interrumpió un barrido N-1 y se generó un archivo `.parcial.csv`.** El archivo contiene el progreso del barrido interrumpido. El resultado guardado anteriormente no se modifica, por lo que el archivo parcial puede eliminarse si no se necesita conservar ese progreso.
