@@ -16,7 +16,7 @@ El modelo incluye tres puntos de operación preparados para su simulación. Entr
 - **Python 3.11 o superior.** PyPSA 1.x requiere una versión compatible de Python. Las versiones 3.10 y anteriores no cumplen este requisito. Comprueba los intérpretes instalados antes de crear el entorno:
 
   ```powershell
-  py --list          # Windows: intérpretes instalados
+  python --version          # Windows: intérpretes instalados
   ```
 
   ```bash
@@ -34,7 +34,7 @@ El repositorio incluye los datos de entrada y las redes ya construidas. Por ello
 ### Windows (PowerShell)
 
 ```powershell
-py -3.11 -m venv .venv
+python3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python menu.py
