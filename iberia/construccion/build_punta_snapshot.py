@@ -215,9 +215,55 @@ def main():
         f"{rotos[['p_nom','p_set','carrier']].head().to_string()}")
 
     n.export_to_netcdf(config.red(SALIDA))
+    cerrar_balance(es_buses)
     print(f"\n  Guardado en data/redes/{SALIDA}")
     print("  RECORDATORIO: escenario DERIVADO, no validado. Hereda la")
     print("  validacion de la red, no la del punto de operacion.")
+
+
+def cerrar_balance(es_buses, tol_mw=1.0, max_iter=10):
+    """Cierra el balance del punto con el flujo AC (15-nov-2026).
+
+    Hasta esta fecha el punto no cerraba: Espana exportaba los 1.000 MW de
+    EXPORTACION_ES_MW, pero los agregados de Portugal y Francia, heredados del
+    escenario generico, importan 2.366 MW entre los dos. Ese hueco de
+    1.366 MW mas todas las perdidas lo cubria el nudo de referencia G0031
+    (1.452 MW de placa), que producia 2.768 MW con 607,5 programados: la
+    misma inyeccion concentrada que se corrigio en el apagon.
+
+    Se itera con el flujo AC y los limites de reactivo activos: lo que el
+    nudo de referencia produce por encima o por debajo de su p_set se
+    reparte entre los generadores espanoles que producen, en proporcion a
+    su despacho, sin pasar de su placa y salvo la nuclear y el propio nudo de
+    referencia. La demanda no se toca: en este escenario no es un dato
+    medido sino una media mensual, y el cierre solo corrige el balance.
+    """
+    from iberia import analisis_n1 as an                    # noqa: E402
+    from iberia import limites_reactivos_espana as L        # noqa: E402
+    print("\n  Cerrando el balance con el flujo AC (limites de reactivo activos)...")
+    for it in range(1, max_iter + 1):
+        base, _ = an.caso_base(verbose=False, con_limites=True, red='punta')
+        nl, _ = L.aplicar(base, verbose=False)
+        g = nl.generators
+        slack = g.index[g.control == 'Slack'][0]
+        desvio = float(nl.generators_t.p.iloc[0][slack] - g.at[slack, 'p_set'])
+        print(f"    iteracion {it}: nudo de referencia {slack} desvio {desvio:+8.1f} MW")
+        if abs(desvio) < tol_mw:
+            break
+        n = pypsa.Network(config.red(SALIDA))
+        gi = n.generators[n.generators.bus.isin(es_buses) & (n.generators.p_set > 0)
+                          & (n.generators.index != slack)
+                          & (n.generators.carrier != 'Nuclear')].index
+        reparto = desvio * n.generators.loc[gi, 'p_set'] / n.generators.loc[gi, 'p_set'].sum()
+        n.generators.loc[gi, 'p_set'] = (n.generators.loc[gi, 'p_set'] + reparto).clip(
+            upper=n.generators.loc[gi, 'p_nom'])
+        n.export_to_netcdf(config.red(SALIDA))
+    else:
+        raise SystemExit("El cierre del balance de la punta no convergio")
+    n = pypsa.Network(config.red(SALIDA))
+    gen_es = float(n.generators[n.generators.bus.isin(es_buses)].p_set.sum())
+    print(f"    punto cerrado: generacion espanola {gen_es:,.1f} MW; el nudo de "
+          f"referencia produce su p_set")
 
 
 if __name__ == '__main__':

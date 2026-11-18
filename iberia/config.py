@@ -79,7 +79,7 @@ ESCENARIOS = {
     'escenario': ('iberia_scenario.nc',
                   'exportacion generica de 3.000 MW (despacho uniforme)'),
     'apagon':    ('iberia_blackout.nc',
-                  '28-abr-2025 12:33, solar dominante (18 GW de FV)'),
+                  '28-abr-2025 12:33, datos medidos de ENTSO-E (17 GW de FV)'),
     'punta':     ('iberia_punta.nc',
                   '15-ene 20-21 h, punta invernal nocturna, solar CERO'),
 }

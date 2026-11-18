@@ -224,9 +224,9 @@ def main():
     total = len(puentes) + len(mallados) + len(grandes) + len(pequenos)
 
     print(f"\n  REPARTO de las {total} contingencias:")
-    print(f"    ramas PUENTE          {len(puentes):5d}   grafo, sin flujo AC")
+    print(f"    elementos PUENTE      {len(puentes):5d}   grafo, sin flujo AC")
     print(f"    generadores < {P_MIN_GENERADOR_MW:.0f} MW   {len(pequenos):5d}   balance, sin flujo AC")
-    print(f"    ramas MALLADAS        {len(mallados):5d}   flujo AC con limites de Q")
+    print(f"    elementos MALLADOS    {len(mallados):5d}   flujo AC con limites de Q")
     print(f"    generadores >= {P_MIN_GENERADOR_MW:.0f} MW  {len(grandes):5d}   flujo AC con limites de Q")
     print(f"    {'':22s} {len(ac):5d}   TOTAL con flujo AC")
     print(f"\n    EXCLUIDOS: {len(excluidos)} generadores de "

@@ -35,7 +35,7 @@ El menú presenta los siguientes puntos:
 ```text
 SOBRE QUE PUNTO DE OPERACION QUIERES TRABAJAR
   * 1) 28-abr-2025 12:33 (apagon iberico)
-       RECONSTRUIDO de fuentes secundarias; el N-1 corre sobre un caso base LIMPIO
+       MEDIDO (ENTSO-E, 12:15 CEST) con el balance cerrado; el N-1 corre sobre un caso base LIMPIO
     2) 15-ene 20-21 h (punta invernal nocturna)
        DERIVADO; su caso base arranca con 5 sobrecargas (despacho sin orden de merito): el N-1 se cita contra esa referencia
     3) exportacion generica de 3.000 MW (despacho uniforme)
@@ -99,7 +99,7 @@ El menú permite seleccionar uno de los siguientes procedimientos:
 
 | Modalidad | Descripción | Tiempo aproximado |
 |---|---|---|
-| **Barrido completo** | Evalúa las 3.277 contingencias. Las ramas que aíslan carga se analizan mediante topología; los generadores pequeños, mediante balance de potencia; y las restantes (2.155 en el apagón y 2.045 en la punta), mediante flujo AC. | Aproximadamente 35 minutos en el escenario del apagón y 25 minutos en el escenario de punta. |
+| **Barrido completo** | Evalúa las 3.277 contingencias. Las líneas y transformadores que aíslan carga se analizan mediante topología; los generadores pequeños, mediante balance de potencia; y las restantes (2.134 en el apagón y 2.049 en la punta), mediante flujo AC. | Aproximadamente 40 minutos en el escenario del apagón y 30 minutos en el escenario de punta. |
 | **Solo el plan** | Informa el número de contingencias de cada clase y estima el coste computacional del barrido. | Segundos. |
 | **Una contingencia concreta** | Evalúa la salida de un elemento seleccionado por su nombre, por ejemplo, `L0690` o `G0911`. | De algunos segundos a un minuto. |
 | **El ranking** | Muestra las contingencias más severas del último barrido disponible. | Inmediato, si ya existe un barrido. |
@@ -124,7 +124,7 @@ El menú solicita los siguientes parámetros:
 
 La simulación informa el nadir de frecuencia o, si se produce el colapso, el instante en que ocurre; el RoCoF inicial; la contribución de la regulación primaria; la potencia de clientes deslastrada; la potencia de bombeo desconectada; y el instante de actuación de cada escalón. El tiempo de ejecución es de unos segundos.
 
-Como referencia, para el escenario del apagón y una pérdida de 2.500 MW, el esquema completo activa únicamente el escalón de bombeo y el nadir alcanza 49,5 Hz. Al desactivar los escalones de bombeo, el mismo evento alcanza 49,0 Hz y se desconectan 4.050 MW de clientes. Con la pérdida predeterminada de 2.000 MW, sin los escalones de bombeo el nadir se sitúa en 49,01 Hz, una centésima por encima del primer escalón general.
+Como referencia, para el escenario del apagón y una pérdida de 2.500 MW, el esquema completo activa únicamente el escalón de bombeo y el nadir alcanza 49,5 Hz. Al desactivar los escalones de bombeo, el mismo evento alcanza 49,0 Hz y se desconectan 3.621 MW de clientes. Con la pérdida predeterminada de 2.000 MW, sin los escalones de bombeo el nadir se sitúa en 49,02 Hz, dos centésimas por encima del primer escalón general.
 
 ### Deslastre con BTM: MILP frente al proporcional
 
@@ -133,6 +133,8 @@ Esta opción implementa el algoritmo de deslastre que considera la generación d
 El MILP asigna las barras a los escalones del P.O. 1.6 teniendo en cuenta cuánta generación BTM permanece conectada después de la desconexión inicial y podría perderse como consecuencia adicional del deslastre. El modelo identifica esta fracción como **generación embebida sana**. El resultado se compara con el reparto proporcional del esquema regulado, utilizando como criterio una misma potencia total desconectada.
 
 El menú solicita el porcentaje de BTM conectado mediante inversores que se desconecta. El valor predeterminado es 80 %.
+
+Como referencia, en el escenario del apagón y con el valor predeterminado, el sistema colapsa a los 7,44 s aun con los seis escalones activados: el esquema desconecta como máximo la mitad de la demanda más el bombeo (15.101 MW) frente a un evento de 19.715 MW. El esquema completo evita el colapso hasta una desconexión de BTM del 69 %. La comparación entre el MILP y el reparto proporcional se realiza igualmente, porque se mide sobre la misma secuencia de escalones disparados.
 
 La ejecución tarda unos segundos y genera:
 
@@ -149,7 +151,7 @@ El procedimiento se repite para diferentes niveles de penetración de BTM y dist
 
 Esta opción está disponible únicamente para el escenario del apagón. Utiliza el evento documentado y compara la frecuencia simulada por el modelo, segundo a segundo, con el registro del Fraunhofer ISE en Málaga. Esta es la medición independiente utilizada para contrastar la respuesta dinámica del modelo. El tiempo de ejecución es de unos segundos.
 
-La salida permite evaluar la correspondencia entre la caída de frecuencia simulada y la registrada. En la reconstrucción descrita, el modelo reproduce la caída medida y no presenta colapso por frecuencia, en concordancia con el comportamiento del sistema real. El 28 de abril de 2025, la frecuencia descendió 0,75 Hz antes de que se desconectara la interconexión con Francia.
+La salida permite evaluar la correspondencia entre la caída de frecuencia simulada y la registrada. Con el punto de operación medido, el modelo reproduce la caída hasta la separación de Francia con un error del 4,7 % (0,715 Hz frente a 0,750 Hz) y no presenta colapso por frecuencia, en concordancia con el comportamiento del sistema real. El 28 de abril de 2025, la frecuencia descendió 0,75 Hz antes de que se desconectara la interconexión con Francia.
 
 ---
 
@@ -230,7 +232,7 @@ Esta opción presenta los mapas disponibles para el punto de operación seleccio
 | Mapa | Información presentada |
 |---|---|
 | Red por nivel de tensión | Red de 400 kV y de 220-132 kV, interconexiones internacionales y sistemas agregados de Portugal y Francia. |
-| Cargabilidad de las ramas | Cargabilidad de las ramas del caso base del punto de operación, agrupada en bandas (< 50 %, 50 – 75 %, 75 – 100 % y > 100 %). |
+| Cargabilidad de las líneas | Cargabilidad de las líneas del caso base del punto de operación, agrupada en bandas (< 50 %, 50 – 75 %, 75 – 100 % y > 100 %). |
 | Distribución del BTM | Potencia instalada de autoconsumo por barra, agrupada por bandas de potencia. |
 | Inercia instalada | Producto de la constante de inercia, H, por la potencia de placa, representado por barra a partir de la red de construcción. |
 | Red con fondo cartográfico | Representación de la red por nivel de tensión sobre un mapa base. |
@@ -260,7 +262,7 @@ Vuelve a generar los mapas que no dependen de un punto de operación específico
 
 ### Cómo se construye cada escenario
 
-Presenta la procedencia de los tres puntos de operación y el respaldo asociado a cada uno: la reconstrucción del apagón, el escenario de punta y el escenario genérico.
+Presenta la procedencia de los tres puntos de operación y el respaldo asociado a cada uno: el punto del apagón construido con los datos medidos de ENTSO-E, el escenario de punta y el escenario genérico.
 
 ---
 
@@ -268,12 +270,12 @@ Presenta la procedencia de los tres puntos de operación y el respaldo asociado 
 
 Antes de utilizar los resultados del modelo en un informe, presentación o publicación, es importante tener en cuenta las siguientes limitaciones:
 
-- **El escenario del apagón es el punto de referencia.** Es el único cuya respuesta dinámica se ha contrastado con una medición real de frecuencia. Además, su caso base para el análisis N-1 no presenta ramas sobrecargadas ni barras fuera del rango de tensión.
-- **Los resultados N-1 de la punta deben referirse a su caso base.** Este caso base presenta 5 ramas con una cargabilidad entre el 106 % y el 120 %, debidas al despacho uniforme sin orden de mérito para una demanda de 40 GW. Cada contingencia debe interpretarse como incremento respecto a esa referencia.
+- **El escenario del apagón es el punto de referencia.** Es el único construido con datos medidos (ENTSO-E) y el único cuya respuesta dinámica se ha contrastado con una medición real de frecuencia. Además, su caso base para el análisis N-1 no presenta líneas sobrecargadas ni barras fuera del rango de tensión.
+- **Los resultados N-1 de la punta deben referirse a su caso base.** Este caso base presenta 5 líneas con una cargabilidad entre el 104 % y el 120 %, debidas al despacho uniforme sin orden de mérito para una demanda de 40 GW. Cada contingencia debe interpretarse como incremento respecto a esa referencia.
 - **La inercia se estima por tecnología.** No se dispone de un registro público de inercia individual por unidad para el parque español. Por ello, los resultados de nadir y RoCoF dependen de los valores asignados por tecnología en el modelo.
 - **El efecto del BTM depende de los supuestos del escenario.** La respuesta ante su desconexión varía según la fracción de generación que se pierde y el instante en que ocurre el evento. Las opciones *Cascada BTM multironda* y *Sensibilidad del umbral* permiten estudiar esta dependencia.
 - **Portugal y Francia se representan mediante sistemas agregados.** Francia se utiliza como condición de contorno y sus magnitudes deben mantenerse separadas de los balances y métricas del sistema ibérico; el menú ya las separa en el balance y en las pérdidas. Portugal forma parte de la representación agregada del sistema síncrono ibérico.
-- **El escenario genérico no es una referencia de tensión.** Presenta 12 barras entre 1,10 y 1,11 pu, ya que la compensación reactiva del modelo es fija.
+- **El escenario genérico no es una referencia de tensión.** Presenta 16 barras entre 1,10 y 1,12 pu, ya que la compensación reactiva del modelo es fija.
 
 ---
 

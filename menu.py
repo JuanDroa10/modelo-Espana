@@ -45,8 +45,8 @@ _PUNTO = {'tipo': 'apagon', 'etiqueta': '28-abr-2025 12:33 (apagon iberico)'}
 
 _ESCENARIOS = [
     ('apagon', '28-abr-2025 12:33 (apagon iberico)',
-     'RECONSTRUIDO de fuentes secundarias; el N-1 corre sobre un caso '
-     'base LIMPIO', '92'),
+     'MEDIDO (ENTSO-E, 12:15 CEST) con el balance cerrado; el N-1 corre '
+     'sobre un caso base LIMPIO', '92'),
     ('punta', '15-ene 20-21 h (punta invernal nocturna)',
      'DERIVADO; su caso base arranca con 5 sobrecargas (despacho sin '
      'orden de merito): el N-1 se cita contra esa referencia', '93'),
@@ -266,12 +266,12 @@ def sim_entsoe():
 def sim_n1():
     print()
     parrafo("El barrido completo son 3.277 contingencias. No todas necesitan "
-            "flujo AC: las ramas PUENTE se resuelven por teoria de grafos "
+            "flujo AC: los elementos PUENTE se resuelven por teoria de grafos "
             "(su salida aisla, no redistribuye) y los generadores pequeños "
-            "por balance. Eso deja unas 2.045 con flujo AC de verdad.")
+            "por balance. Eso deja unas 2.050 con flujo AC de verdad.")
     print()
     op = elegir("que quieres hacer", [
-        'barrido completo del punto activo  (34 min apagon / 138 min punta)',
+        'barrido completo del punto activo  (~40 min apagon / ~30 min punta)',
         'solo el PLAN: cuantas contingencias de cada clase y cuanto costaria',
         'una contingencia concreta, elegida por nombre',
         'el ranking de las mas graves del ultimo barrido'])
@@ -451,7 +451,7 @@ def con_resumen():
     # va tambien la EXPORTACION a Francia. Mezclarlas da una cifra de
     # perdidas inflada (7,8% en el apagon, cuando lo que hay son 2.487 MW
     # de los que la mayoria cruzan la frontera). Se separan: el
-    # intercambio se mide en las propias ramas transfronterizas.
+    # intercambio se mide en las propias lineas transfronterizas.
     cruce = [l for l in n.lines.index
              if (n.lines.at[l, 'bus0'] in ib) != (n.lines.at[l, 'bus1'] in ib)]
     exporta = 0.0
@@ -463,7 +463,7 @@ def con_resumen():
     print(f"   POTENCIA   IBERIA: generacion {gen:9.1f} MW | "
           f"demanda {car:9.1f} MW")
     print(f"              exporta a FR {exporta:8.1f} MW por {len(cruce)} "
-          f"ramas | perdidas {perdidas:7.1f} MW "
+          f"lineas | perdidas {perdidas:7.1f} MW "
           f"({100*perdidas/max(car,1):.2f} %)")
     print(f"              red entera (con FR): gen {gen_t:9.1f} | "
           f"dem {car_t:9.1f}  <- no citar: FR es contorno")
@@ -508,9 +508,9 @@ def con_buscar():
             v = float(n.buses_t.v_mag_pu.iloc[0][b])
             print(f"      {b:12s} {n.buses.at[b,'v_nom']:5.0f} kV  "
                   f"v={v:.4f} pu | placa {gp:8.1f} MW | carga {cp:8.1f} MW")
-            ramas = [l for l in n.lines.index
+            lineas_nudo = [l for l in n.lines.index
                      if n.lines.at[l, 'bus0'] == b or n.lines.at[l, 'bus1'] == b]
-            for l in ramas[:12]:
+            for l in lineas_nudo[:12]:
                 p = float(n.lines_t.p0.iloc[0][l])
                 qq = float(n.lines_t.q0.iloc[0][l])
                 pct = 100*(p**2 + qq**2)**0.5 / max(float(n.lines.at[l, 's_nom']), 1e-9)
@@ -520,7 +520,7 @@ def con_buscar():
                 print(f"         -> {l:8s} a {otro:10s} "
                       f"P={p:8.1f} Q={qq:8.1f} MVAr  "
                       + _c(f"({pct:.0f} % de s_nom)", col))
-            if len(ramas) == 1:
+            if len(lineas_nudo) == 1:
                 print(_c("         (grado 1: este nudo es RADIAL)", '93'))
     gens = [g for g in n.generators.index if Q in g.upper()][:15]
     if gens:
@@ -669,11 +669,14 @@ def con_escenarios():
         print(f"      {_c(clave, '1;96')}  {etq}")
         print(f"         {_c(aval, color)}")
     print()
-    parrafo("El del APAGON se reconstruye en build_blackout_snapshot.py a "
-            "partir de fuentes secundarias (NERC, prensa tecnica, informe de "
-            "REE) y cierra su balance con una importacion neta de 200 MW que "
-            "las fuentes no respaldan. El de PUNTA se deriva en "
-            "build_punta_snapshot.py. El tercero es sintetico.")
+    parrafo("El del APAGON se construye en build_blackout_snapshot.py con los "
+            "datos MEDIDOS de la plataforma de transparencia de ENTSO-E para "
+            "las 12:15 CEST: generacion por tecnologia, bombeo, demanda "
+            "espanola y portuguesa e intercambios con Francia y Portugal. El "
+            "balance se cierra con el flujo AC; lo unico que no se representa "
+            "es la exportacion a Marruecos y Andorra (~0,7 GW). Lo que no es "
+            "dato es el reparto entre generadores y barras. El de PUNTA se "
+            "deriva en build_punta_snapshot.py. El tercero es sintetico.")
     print()
     parrafo("El apagon es el escenario sobre el que descansan el BTM y el "
             "deslastre, y es el unico cuyo caso base N-1 esta limpio.")
@@ -717,10 +720,10 @@ MAPAS = [
      'la red por nivel de tension, con los agregados de PT y FR', None,
      ['iberia.mapas', 'red']),
     ('resultados/mapas/mapa_carga_apagon.png',
-     'cargabilidad de las ramas en el caso base', 'apagon',
+     'cargabilidad de las lineas en el caso base', 'apagon',
      ['iberia.mapas', 'carga', '--red', 'apagon']),
     ('resultados/mapas/mapa_carga_punta.png',
-     'cargabilidad de las ramas en el caso base', 'punta',
+     'cargabilidad de las lineas en el caso base', 'punta',
      ['iberia.mapas', 'carga', '--red', 'punta']),
     ('resultados/mapas/mapa_btm.png',
      'donde esta el BTM (placa instalada de autoconsumo)', None,
@@ -892,7 +895,7 @@ MENU = [
         "base arrastra generadores fuera de su curva de capacidad."),
     _op('Consultar', 'Buscar una barra, generador o linea', con_buscar,
         "Busca por texto libre y muestra lo que el modelo sabe: tension, "
-        "generacion, carga, ramas conectadas con su flujo y cargabilidad. "
+        "generacion, carga, lineas conectadas con su flujo y cargabilidad. "
         "Marca los nudos RADIALES, que es donde se esconden los defectos de "
         "control de tension."),
     _op('Consultar', 'El BTM espanol', con_btm,
@@ -931,7 +934,7 @@ MENU = [
         "todavia -lo normal la primera vez-, ofrece generarlo en el momento."),
     _op('Mapas', 'Regenerar el mapa de carga de este punto',
         map_regenerar_carga,
-        "Vuelve a dibujar la cargabilidad de las ramas de este punto. "
+        "Vuelve a dibujar la cargabilidad de las lineas de este punto. "
         "Resuelve el caso base con los limites de reactivo: ~1 min en el "
         "punto de operacion elegido.",
         no_aplica={'escenario': "no hay mapa de carga del escenario "

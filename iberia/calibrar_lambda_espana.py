@@ -3,8 +3,9 @@ contra la penetracion BTM REAL espanola, para elegir un valor por defecto.
 
 NO SE PUEDE REUSAR LAMBDA_BTM=5,0 DE COLOMBIA SIN COMPROBARLO: ese valor
 se calibro contra el regimen normal colombiano (14-60% de penetracion).
-Espana, en iberia_blackout.nc, tiene 8.500 / 27.000 MW = 31,5% de PLACA
-de BTM sobre la demanda solo-Espana, y 5.029 / 27.000 = 18,6% de BTM
+Espana, en iberia_blackout.nc (datos medidos de ENTSO-E, 15-nov-2026), tiene
+8.500 / 24.138 MW = 35,2% de PLACA de BTM sobre la demanda solo-Espana, y
+4.799 / 24.138 = 19,9% de BTM
 PRODUCIENDO, que es lo unico que puede caerse (este script mide y
 reporta el valor real). La cifra de 40,4% que figuraba aqui usaba la
 placa de dic-2025, ya retirada. Aun con la placa de abril se sigue

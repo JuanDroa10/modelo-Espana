@@ -5,7 +5,7 @@ Por que existe
 --------------
 El modelo tiene dos puntos de operacion que son casi opuestos:
 
-    apagon  28-abr-2025 12:33  DIURNO   18 GW de FV, inercia minima
+    apagon  28-abr-2025 12:33  DIURNO   17 GW de FV (ENTSO-E), inercia minima
     punta   15-ene 20-21 h     NOCTURNO solar CERO, inercia maxima
 
 Hasta ahora cada uno se medía con el script que tocara y con la bateria
@@ -163,7 +163,7 @@ def bloque_flujo(red):
         'perdidas totales [MW]': (_f(perd), 'con Francia, no citable'),
         '  en lineas [MW]': (_f(p_lin), ''),
         '  en trafos [MW]': (_f(p_tra), ''),
-        'PERDIDAS IBERICAS [MW]': (_f(perd_ib), 'ramas ES/PT, la cifra buena'),
+        'PERDIDAS IBERICAS [MW]': (_f(perd_ib), 'lineas y trafos ES/PT, la cifra buena'),
         'perdidas ibericas [% dem. ES+PT]': (
             f"{100*perd_ib/dem_ib:.2f} %".replace('.', ',') if dem_ib else 'n/d', ''),
         'Q generada [MVAr]': (_f(q_gen), ''),
@@ -261,11 +261,11 @@ def bloque_permanente(n_lim):
         for lo, hi, etq in ((0, 50, '< 50 %'), (50, 80, '50-80 %'),
                             (80, 100, '80-100 %'), (100, 1e9, '> 100 % (sobrecarga)')):
             cnt = int(((pct >= lo) & (pct < hi)).sum())
-            out[f'  ramas al {etq}'] = (
+            out[f'  lineas y trafos al {etq}'] = (
                 f"{cnt} ({100*cnt/len(pct):.1f} %)".replace('.', ','), '')
         top = pct.sort_values(ascending=False).head(3)
         for i, (nombre, val) in enumerate(top.items(), 1):
-            out[f'  rama mas cargada #{i}'] = (_f(val) + ' %', str(nombre))
+            out[f'  elemento mas cargado #{i}'] = (_f(val) + ' %', str(nombre))
 
     # --- Generacion y reactivo resueltos, por tecnologia espanola ---
     es = buses_de(n_lim, 'ES')

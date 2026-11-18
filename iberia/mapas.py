@@ -22,6 +22,7 @@ warnings.filterwarnings('ignore')
 logging.disable(logging.INFO)
 
 import numpy as np
+import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -199,7 +200,7 @@ def fig_mapa_red():
     # 220 y 132 kV en ROJO e interconexiones en AMARILLO. Antes los tres
     # niveles iban en tonos de un mismo azul y no se distinguian.
     from matplotlib.collections import LineCollection
-    niveles = [((132.0, 220.0), ROJO, 0.40, 2, 'Línea de 220 y 132 kV'),
+    niveles = [((132.0, 220.0), ROJO, 0.40, 2, 'Línea de 220 kV'),
                ((400.0,), AZUL, 0.85, 3, 'Línea de 400 kV')]
     v0 = b.v_nom.reindex(n.lines.bus0).values
     p0 = n.lines.bus0.str[:2]; p1 = n.lines.bus1.str[:2]
@@ -215,6 +216,38 @@ def fig_mapa_red():
         ax.add_collection(LineCollection(
             segs, colors=color, linewidths=lw, zorder=z,
             capstyle='round', label=etq))
+
+    # Red de Mallorca y enlace HVDC Morvedre-Santa Ponsa (L0254). NO estan en
+    # el modelo: `construccion/fix_balearic.py` deja solo la red sincrona principal, y el
+    # enlace no se modela. Se dibujan desde el CSV de partida para situar la
+    # isla, y su rotulo lo dice. Se toman las lineas con algun extremo que el
+    # modelo no tiene, de modo que si un dia se modelan desaparecen de aqui.
+    lin_csv = pd.read_csv(config.dato('line_data.csv'))
+    bus_csv = pd.read_csv(config.dato('bus_data.csv')).set_index('bus_id')
+    fuera = lin_csv[~lin_csv.bus0.isin(b.index) | ~lin_csv.bus1.isin(b.index)]
+    fuera = fuera[fuera.bus0.isin(bus_csv.index) & fuera.bus1.isin(bus_csv.index)]
+    fuera = fuera[fuera.bus0.str[:2].isin(['ES', 'PT'])]
+    def _segs_csv(df):
+        return [[(bus_csv.at[l.bus0, 'x'], bus_csv.at[l.bus0, 'y']),
+                 (bus_csv.at[l.bus1, 'x'], bus_csv.at[l.bus1, 'y'])]
+                for _, l in df.iterrows()]
+    ac_isla = fuera[fuera.dc != 't']
+    hvdc = fuera[fuera.dc == 't']
+    # Con el mismo estilo que la red peninsular de su nivel y sin entrada
+    # propia en la leyenda: es red de transporte como la otra.
+    for vs, color, lw, z, _etq in niveles:
+        sel = ac_isla[ac_isla.voltage.isin(vs)]
+        ax.add_collection(LineCollection(
+            _segs_csv(sel), colors=color, linewidths=lw, zorder=z,
+            capstyle='round'))
+    ax.add_collection(LineCollection(
+        _segs_csv(hvdc), colors=NARANJA, linewidths=1.3, zorder=4,
+        linestyles=(0, (4, 2)), label='Enlace HVDC'))
+    bi = sorted(set(ac_isla.bus0) | set(ac_isla.bus1)
+                | set(hvdc.bus0) | set(hvdc.bus1))
+    bi = [x for x in bi if x not in b.index]
+    ax.scatter(bus_csv.loc[bi, 'x'], bus_csv.loc[bi, 'y'], s=1.2,
+               color='#333333', zorder=5, linewidths=0)
 
     cruz = n.lines[~interna]
     segs = [[(b.at[l.bus0, 'x'], b.at[l.bus0, 'y']),

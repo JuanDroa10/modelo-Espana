@@ -17,7 +17,12 @@ from iberia.analisis_btm_cascada import escenario_real
 
 # Valores documentados en el README y en informe/informe.txt (sub-proyecto D)
 ESPERADO = {
-    'P_gen': 31600.0, 'P_carga': 31800.0,
+    # 15-nov-2026: TODO el bloque se actualiza porque el punto del apagon
+    # pasa a construirse con los datos medidos de ENTSO-E y con el balance
+    # cerrado (ver build_blackout_snapshot). Antes: P_gen 31.600, P_carga
+    # 31.800, Ek 85,5 GW.s, reserva 1.551,2, exportacion -200, t_colapso
+    # 1,87 s, P_carga_es 27.000. El escenario calibrado SIGUE colapsando.
+    'P_gen': 31828.4, 'P_carga': 29951.4,
     # ENERGIA CINETICA, no H y S_base por separado.
     #
     # H y S_base NO son magnitudes fisicas independientes: son una
@@ -46,12 +51,12 @@ ESPERADO = {
     # validaba no aparecen en el informe de REE, ni en NERC, ni en las
     # fuentes secundarias del proyecto, y la coincidencia que se les
     # atribuia la producia el resto termico aplastado al 1%.
-    'energia_cinetica_GWs': 85.5,
+    'energia_cinetica_GWs': 89.16,
     # 1.965,7 -> 1.551,2 por lo mismo, y es una CORRECCION, no un efecto
     # lateral: de la reserva vieja 486 MW eran de la nuclear, que no
     # presta regulacion primaria (defecto ya levantado en la auditoria del
     # 3-oct). Con la nuclear al 0,98 su margen cae a ~69 MW.
-    'reserva': 1551.2, 'exportacion': -200.0,
+    'reserva': 1638.7, 'exportacion': 1877.0,
     # t_colapso, NO nadir. El 'nadir=47,497' que este test fijaba antes
     # era la primera muestra bajo F_COLAPSO=47,5: el truncamiento de la
     # integracion, no un minimo. Un test que congela un artefacto lo
@@ -63,6 +68,7 @@ ESPERADO = {
     # cruza F_COLAPSO antes. Es la consecuencia esperada, no una
     # regresion; el signo es el correcto (menos inercia, colapso mas
     # rapido) y la magnitud, un 5%, es coherente con el -9% de Ek.
+    #
     # 1,81 -> 1,87 s el 4-nov-2026: la regulacion primaria pasa de un
     # retardo unico de 8 s al modelo de Anderson-Mirheydar, cuya fraccion de
     # alta presion responde al instante (ver dinamica_frecuencia). La
@@ -71,8 +77,8 @@ ESPERADO = {
     # calibrado colapsa sin ningun BTM adicional- no cambia. La energia
     # cinetica, la reserva y el resto de este test no se mueven, como debe
     # ser: el regulador no toca el punto de operacion.
-    't_colapso': 1.87,
-    'P_carga_es': 27000.0,
+    't_colapso': 1.91,
+    'P_carga_es': 24137.4,
 }
 TOL = {'P_gen': 0.1, 'P_carga': 0.1, 'energia_cinetica_GWs': 0.15,
        'reserva': 0.1, 'exportacion': 0.1, 't_colapso': 0.01,
