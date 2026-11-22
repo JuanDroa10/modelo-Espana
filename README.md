@@ -1,4 +1,4 @@
-# Modelo red de transporte Español: dinámica de frecuencia y generación detrás del contador del sistema eléctrico ibérico
+# Modelo red electrica de transporte Español: dinámica de frecuencia y generación detrás del contador del sistema eléctrico ibérico
 
 Modelo de la **red de transporte peninsular española** de 132, 220 y 400 kV, desarrollado sobre [PyPSA](https://pypsa.org/), que incorpora Portugal y Francia como sistemas eléctricos vecinos. Sobre esta representación se implementan cuatro capas principales de análisis:
 
