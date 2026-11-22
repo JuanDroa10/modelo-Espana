@@ -35,9 +35,9 @@ El menú presenta los siguientes puntos:
 ```text
 SOBRE QUE PUNTO DE OPERACION QUIERES TRABAJAR
   * 1) 28-abr-2025 12:33 (apagon iberico)
-       MEDIDO (ENTSO-E, 12:15 CEST) con el balance cerrado; el N-1 corre sobre un caso base LIMPIO
-    2) 15-ene 20-21 h (punta invernal nocturna)
-       DERIVADO; su caso base arranca con 5 sobrecargas (despacho sin orden de merito): el N-1 se cita contra esa referencia
+       MEDIDO (ENTSO-E 12:15 CEST, convencional por central con el I90) con el balance cerrado; su caso base arranca con 1 sobrecarga (L1146, 104 %): el N-1 se cita contra esa referencia
+    2) 15-ene-2025 20:45 (punta invernal nocturna)
+       MEDIDO (ENTSO-E, convencional por central con el I90) con el balance cerrado; su caso base arranca con 9 sobrecargas (4 en la frontera con Francia): el N-1 se cita contra esa referencia
     3) exportacion generica de 3.000 MW (despacho uniforme)
        SINTETICO; no representa ninguna hora real
     q) salir
@@ -49,8 +49,8 @@ Los tres puntos de operación tienen distinto origen y nivel de respaldo. Esta d
 
 | Punto | Procedencia | Uso previsto |
 |---|---|---|
-| **Apagón** (28-abr-2025, 12:33 h) | Reconstrucción basada en la combinación de generación y los intercambios publicados para ese instante. Su respuesta dinámica se contrasta con la frecuencia medida ese día. | Punto de referencia para los análisis de BTM, deslastre y contingencias N-1. |
-| **Punta** (15-ene, 20:00-21:00 h) | Escenario derivado de las cuotas medias de generación por tecnología correspondientes a enero. La generación solar es nula por tratarse de un periodo nocturno. | Escenario de elevada inercia para contrastar sus resultados con los del apagón. |
+| **Apagón** (28-abr-2025, 12:33 h) | Datos medidos de ENTSO-E para las 12:15 h y generación convencional central a central con el I90 de REE. Su respuesta dinámica se contrasta con la frecuencia medida ese día. | Punto de referencia para los análisis de BTM, deslastre y contingencias N-1. |
+| **Punta** (15-ene-2025, 20:45 h) | Datos medidos de ENTSO-E y generación convencional central a central con el I90 de REE, en el cuarto de hora de la punta anual. La generación solar es prácticamente nula (100 MW) por tratarse de un periodo nocturno. | Escenario de elevada inercia para contrastar sus resultados con los del apagón. |
 | **Genérico** | Escenario sintético de exportación de 3.000 MW con despacho uniforme. | Comparaciones metodológicas. No representa una hora real de operación. |
 
 El indicador de respaldo asociado a cada punto se muestra en la pantalla de selección y se repite en la cabecera de las pantallas del menú. Esto permite identificar el escenario al que corresponde cada resultado y evitar comparaciones entre puntos de operación distintos sin tener en cuenta sus diferencias.
@@ -108,7 +108,7 @@ El barrido completo solicita confirmación porque, al finalizar correctamente, s
 
 El ranking utiliza el barrido más reciente ejecutado por el usuario. Si todavía no se ha realizado un barrido, utiliza el **barrido de referencia** incluido en `data/referencia/` e informa de ello en pantalla. Si el elemento crítico identificado es el mismo en todas las contingencias, el menú lo advierte, ya que esta condición indica una limitación del caso base y no una característica de la red.
 
-En el escenario de punta, el caso base presenta 5 sobrecargas debidas al despacho uniforme. Los resultados deben interpretarse como incremento respecto a esa referencia, tal como se explica en [Consideraciones antes de citar resultados](#8-consideraciones-antes-de-citar-resultados).
+Los casos base no están completamente limpios: el de la punta presenta 9 sobrecargas (cuatro en la frontera con Francia) y el del apagón una (`L1146`, 104 %). Los resultados deben interpretarse como incremento respecto a esa referencia, tal como se explica en [Consideraciones antes de citar resultados](#8-consideraciones-antes-de-citar-resultados).
 
 ### Dinámica de frecuencia (P.O. 1.6)
 
@@ -124,7 +124,7 @@ El menú solicita los siguientes parámetros:
 
 La simulación informa el nadir de frecuencia o, si se produce el colapso, el instante en que ocurre; el RoCoF inicial; la contribución de la regulación primaria; la potencia de clientes deslastrada; la potencia de bombeo desconectada; y el instante de actuación de cada escalón. El tiempo de ejecución es de unos segundos.
 
-Como referencia, para el escenario del apagón y una pérdida de 2.500 MW, el esquema completo activa únicamente el escalón de bombeo y el nadir alcanza 49,5 Hz. Al desactivar los escalones de bombeo, el mismo evento alcanza 49,0 Hz y se desconectan 3.621 MW de clientes. Con la pérdida predeterminada de 2.000 MW, sin los escalones de bombeo el nadir se sitúa en 49,02 Hz, dos centésimas por encima del primer escalón general.
+Como referencia, para el escenario del apagón y una pérdida de 2.500 MW, el esquema completo activa únicamente el escalón de bombeo y el nadir alcanza 49,5 Hz. Al desactivar los escalones de bombeo, el mismo evento alcanza 49,0 Hz y se desconectan 3.633 MW de clientes. Con la pérdida predeterminada de 2.000 MW, sin los escalones de bombeo el nadir se sitúa en 49,02 Hz, dos centésimas por encima del primer escalón general.
 
 ### Deslastre con BTM: MILP frente al proporcional
 
@@ -134,11 +134,14 @@ El MILP asigna las barras a los escalones del P.O. 1.6 teniendo en cuenta cuánt
 
 El menú solicita el porcentaje de BTM conectado mediante inversores que se desconecta. El valor predeterminado es 80 %.
 
-Como referencia, en el escenario del apagón y con el valor predeterminado, el sistema colapsa a los 7,44 s aun con los seis escalones activados: el esquema desconecta como máximo la mitad de la demanda más el bombeo (15.101 MW) frente a un evento de 19.715 MW. El esquema completo evita el colapso hasta una desconexión de BTM del 69 %. La comparación entre el MILP y el reparto proporcional se realiza igualmente, porque se mide sobre la misma secuencia de escalones disparados.
+Como referencia, en el escenario del apagón y con el valor predeterminado, el sistema colapsa a los 9,27 s aun con los seis escalones activados: el esquema desconecta como máximo la mitad de la demanda más el bombeo (15.140 MW) frente a un evento de 19.715 MW. El esquema completo evita el colapso hasta una desconexión de BTM del 74 %. La comparación entre el MILP y el reparto proporcional se realiza igualmente, porque se mide sobre la misma secuencia de escalones disparados.
 
-La ejecución tarda unos segundos y genera:
+El plan del MILP se decide sin conocer el evento: se resuelve con ocho sorteos del BTM estimado independientes de la desconexión real, y el resultado es la media. En el escenario del apagón el MILP destruye un 1,5 % menos de generación embebida sana que el reparto proporcional (775,9 frente a 787,6 MW), y según el sorteo la diferencia va de −1,6 a 7,0 %. La ventaja es pequeña porque el modelo reparte el BTM entre las barras de cada región en proporción a la carga, así que no hay diferencias espaciales que el MILP pueda aprovechar.
+
+La ejecución tarda alrededor de un minuto en el apagón y unos veinte en la punta, donde casi no hay BTM y el MILP agota su tiempo límite en cada escalón. Genera:
 
 - La comparación de los métodos en `resultados/comparacion_deslastre_<punto>.csv`.
+- El resultado de cada sorteo del plan en `resultados/comparacion_deslastre_<punto>_semillas.csv`.
 - La traza de frecuencia en `resultados/visualizaciones/`.
 
 ### Cascada BTM multironda
@@ -147,11 +150,13 @@ Esta opción analiza una secuencia de eventos en lugar de limitarse a una única
 
 El procedimiento se repite para diferentes niveles de penetración de BTM y distintos instantes de desconexión. De esta manera, permite evaluar la sensibilidad de los resultados frente a estos supuestos. El tiempo de ejecución es de unos segundos.
 
-### Validación contra la traza real del 28-A
+### Validación contra la frecuencia medida del 28-A
 
-Esta opción está disponible únicamente para el escenario del apagón. Utiliza el evento documentado y compara la frecuencia simulada por el modelo, segundo a segundo, con el registro del Fraunhofer ISE en Málaga. Esta es la medición independiente utilizada para contrastar la respuesta dinámica del modelo. El tiempo de ejecución es de unos segundos.
+Esta opción está disponible únicamente para el escenario del apagón. Alimenta el modelo con la secuencia de eventos al milisegundo del informe final de ENTSO-E (20 de marzo de 2026) y compara la frecuencia simulada con la medida por unidades PMU en Málaga y Zúrich. El tiempo de ejecución es de unos segundos.
 
-La salida permite evaluar la correspondencia entre la caída de frecuencia simulada y la registrada. Con el punto de operación medido, el modelo reproduce la caída hasta la separación de Francia con un error del 4,7 % (0,715 Hz frente a 0,750 Hz) y no presenta colapso por frecuencia, en concordancia con el comportamiento del sistema real. El 28 de abril de 2025, la frecuencia descendió 0,75 Hz antes de que se desconectara la interconexión con Francia.
+La comparación se hace por fases, porque en cada una la física que representa el modelo es distinta. Hasta las 12:33:16 la frecuencia de Málaga coincide con la de Zúrich: Iberia seguía sincronizada con Europa y el modelo aislado no es aplicable. Entre las 12:33:16 y la separación de Francia (12:33:21,535), el modelo sigue la caída de Málaga con un error medio de 0,084 Hz, aunque no representa la oscilación de ángulo que domina ese tramo. En la isla, la caída medida (−0,74 Hz/s) exige un déficit de al menos 3,5 GW, mientras que los eventos registrados dan un superávit de 2,1 GW: faltan al menos 5,6 GW que no aparecen en ningún registro.
+
+La salida también compara la energía cinética del modelo con la que calcula ENTSO-E para las 12:30 (119,5 GW·s). La inercia del apagón está calibrada con esa cifra; la del escenario de punta no, porque ENTSO-E solo la publica para ese instante.
 
 ---
 
@@ -219,7 +224,7 @@ Esta opción está disponible únicamente para el escenario del apagón. El MILP
 El menú ofrece dos alternativas:
 
 - **Operación normal** (aproximadamente 1 minuto): analiza escenarios sin perturbación, con el BTM conectado, para distintos niveles de penetración. Este régimen permite evaluar hasta qué valor de λ puede aumentarse la penalización sin que el esquema deje de cumplir su objetivo.
-- **Calibración completa** (unos segundos): ejecuta el procedimiento completo de calibración del parámetro.
+- **Calibración completa** (unos dos minutos): resuelve el plan con λ = 0,5, 5, 25, 60 y 100 frente a la caída del 80 % del BTM, con ocho sorteos del plan independientes del evento. Todos los valores cubren el objetivo del esquema y dan prácticamente la misma generación embebida sana perdida (entre 774 y 781 MW de media), así que el valor predeterminado, λ = 25, no está optimizado: cualquier valor del rango se comporta igual.
 
 ---
 
@@ -262,7 +267,7 @@ Vuelve a generar los mapas que no dependen de un punto de operación específico
 
 ### Cómo se construye cada escenario
 
-Presenta la procedencia de los tres puntos de operación y el respaldo asociado a cada uno: el punto del apagón construido con los datos medidos de ENTSO-E, el escenario de punta y el escenario genérico.
+Presenta la procedencia de los tres puntos de operación y el respaldo asociado a cada uno: los puntos del apagón y de la punta, construidos con los datos medidos de ENTSO-E y el I90 de REE, y el escenario genérico.
 
 ---
 
@@ -270,12 +275,12 @@ Presenta la procedencia de los tres puntos de operación y el respaldo asociado 
 
 Antes de utilizar los resultados del modelo en un informe, presentación o publicación, es importante tener en cuenta las siguientes limitaciones:
 
-- **El escenario del apagón es el punto de referencia.** Es el único construido con datos medidos (ENTSO-E) y el único cuya respuesta dinámica se ha contrastado con una medición real de frecuencia. Además, su caso base para el análisis N-1 no presenta líneas sobrecargadas ni barras fuera del rango de tensión.
-- **Los resultados N-1 de la punta deben referirse a su caso base.** Este caso base presenta 5 líneas con una cargabilidad entre el 104 % y el 120 %, debidas al despacho uniforme sin orden de mérito para una demanda de 40 GW. Cada contingencia debe interpretarse como incremento respecto a esa referencia.
-- **La inercia se estima por tecnología.** No se dispone de un registro público de inercia individual por unidad para el parque español. Por ello, los resultados de nadir y RoCoF dependen de los valores asignados por tecnología en el modelo.
+- **El escenario del apagón es el punto de referencia.** Es el único cuya respuesta dinámica se ha contrastado con una medición real de frecuencia. Su caso base para el análisis N-1 presenta una línea sobrecargada (`L1146`, 104 %) y ninguna barra fuera del rango de 0,90 a 1,10 pu.
+- **La punta es un punto medido, con un supuesto que decide un resultado.** Su caso base presenta 9 líneas entre el 102 % y el 117 %; cada contingencia debe interpretarse como incremento respecto a esa referencia. Que la punta sobreviva a la cascada del 28-A **sin** deslastre depende de la reserva primaria asignada a Portugal, de la que no hay dato; con el deslastre del P.O. 1.6 sobrevive en cualquier caso.
+- **La inercia se estima por tecnología.** No se dispone de un registro público de inercia individual por unidad para el parque español. En el apagón, el total está calibrado con la energía cinética publicada por ENTSO-E (119,5 GW·s); en los demás escenarios, los resultados de nadir y RoCoF dependen de los valores asignados por tecnología en el modelo.
 - **El efecto del BTM depende de los supuestos del escenario.** La respuesta ante su desconexión varía según la fracción de generación que se pierde y el instante en que ocurre el evento. Las opciones *Cascada BTM multironda* y *Sensibilidad del umbral* permiten estudiar esta dependencia.
 - **Portugal y Francia se representan mediante sistemas agregados.** Francia se utiliza como condición de contorno y sus magnitudes deben mantenerse separadas de los balances y métricas del sistema ibérico; el menú ya las separa en el balance y en las pérdidas. Portugal forma parte de la representación agregada del sistema síncrono ibérico.
-- **El escenario genérico no es una referencia de tensión.** Presenta 16 barras entre 1,10 y 1,12 pu, ya que la compensación reactiva del modelo es fija.
+- **El escenario genérico no es una referencia de tensión.** Presenta 21 barras entre 1,10 y 1,12 pu, ya que la compensación reactiva del modelo es fija.
 
 ---
 

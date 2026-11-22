@@ -41,8 +41,23 @@ repartido). Ahora el punto se cierra por iteracion con el flujo AC:
      despacho ---salvo la nuclear, que se queda en el dato medido---, hasta
      que el nudo de referencia produce exactamente su p_set.
 
+DESPACHO CENTRAL A CENTRAL (19-nov-2026)
+---------------------------------------
+Con el balance cerrado, build_blackout_i90.py reasigna la convencional con
+el P48 del I90DIA de REE (ESIOS), conservando los totales de ENTSO-E: solo
+4 de los 7 grupos nucleares y 6 ciclos combinados estaban en servicio, y el
+bombeo consumiendo queda en sus siete centrales. El P48 de ese dia llega
+solo al cuarto de 11:45: se usa para el compromiso y la ubicacion, no para
+los totales. Despues se repite el cierre sin tocar esas centrales.
+
 La version anterior (NERC / fuentes secundarias) se conserva en la copia de
 desarrollo del modelo; no se distribuye.
+
+INERCIA CALIBRADA (19-nov-2026)
+-------------------------------
+Al final se escala la H de los generadores por pais para que la energia
+cinetica iguale la que calcula ENTSO-E a las 12:30 (Tabla 2-4 del informe
+final): 97.590 MW.s en Espana y 21.884 en Portugal (119.474 en Iberia).
 
 No modifica iberia_scenario.nc: escribe iberia_blackout.nc."""
 from iberia import config
@@ -182,3 +197,25 @@ print(f"\nPunto cerrado: generacion española {gen_es:,.1f} MW "
       f"(ENTSO-E {ENTSOE_SOLAR_MW + ENTSOE_EOLICA_MW + ENTSOE_NUCLEAR_MW + ENTSOE_HIDRO_MW + ENTSOE_TERMICA_MW:,.0f}), "
       f"bombeo {ENTSOE_BOMBEO_MW:,.0f}, demanda en barras {carga_es:,.1f} + perdidas {perd_es:,.1f} MW")
 print(f"✓ Guardado en data/redes/iberia_blackout.nc")
+
+# --- Despacho central a central con el I90 (19-nov-2026, ver docstring) ---
+from iberia.construccion import build_blackout_i90   # noqa: E402
+build_blackout_i90.construir('iberia_blackout.nc', 'iberia_blackout.nc', None)
+
+# --- Inercia calibrada con ENTSO-E (19-nov-2026) ----------------------------
+# El informe final de ENTSO-E (Tabla 2-4) calcula la energia cinetica de las
+# 12:30: 97.590 MW.s en Espana y 21.884 en Portugal. El modelo daba 78.190 y
+# 10.319 (capacidad acoplada = despacho / factor de carga por tecnologia). Se
+# escala la H de los generadores por pais para igualarla. No cambia el flujo ni
+# la reserva primaria (no dependen de H); solo la dinamica. La punta no se
+# calibra: ENTSO-E solo da la cifra de este instante.
+from iberia import dinamica_frecuencia as _din   # noqa: E402
+n = pypsa.Network(config.red('iberia_blackout.nc'))
+_pt = n.generators.bus.str.startswith('PT')
+n.generators.loc[_pt, 'H'] *= _din.CALIBRACION_INERCIA_ENTSOE['PT']
+n.generators.loc[n.generators.bus.str.startswith('ES'), 'H'] *= _din.CALIBRACION_INERCIA_ENTSOE['ES']
+n.export_to_netcdf(config.red('iberia_blackout.nc'))
+_s = _din.Sistema(n)
+print(f"Inercia calibrada con ENTSO-E: energia cinetica {_s.H * _s.S_base / 1e3:.1f} GW.s "
+      f"(ENTSO-E: 119,5)")
+

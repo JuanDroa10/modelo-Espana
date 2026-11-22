@@ -72,9 +72,10 @@ import pypsa
 # escenario DEPENDE de que maquinas por debajo de 50 MW regulen tension
 # en nudos de transporte. Un sistema de 40 GW no deberia necesitarlo.
 # Apunta a que el problema no es el umbral sino el DESPACHO de la punta,
-# que es un escenario derivado y no validado (se construyo escalando
-# tecnologias, sin orden de merito), y que deja demasiada poca
-# generacion grande regulando.
+# que entonces era un escenario derivado y no validado (se construyo
+# escalando tecnologias, sin orden de merito), y que deja demasiada poca
+# generacion grande regulando. (Desde el 19-nov-2026 la punta es MEDIDA,
+# con la convencional central a central del I90: build_punta_snapshot.py.)
 #
 # El APAGON es insensible al umbral: cero fuera de curva en los cinco
 # valores y cifras que se mueven en la cuarta cifra significativa. Eso

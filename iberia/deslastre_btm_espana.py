@@ -412,8 +412,8 @@ def deslastre_desde_asignacion(asignacion, alivio_real, escalones_disparados):
 # efecto SATURA hacia lambda~5. Lo mas probable es que sean optimos
 # casi-equivalentes separados por la tolerancia del solver, no una
 # propiedad real. No es razon para cambiar el valor adoptado -en el eje
-# del EVENTO, que es el que importa para el diseno, 25 si protege mas
-# (604,5 frente a 640,1 MW)- pero si para no presentar el 25 como
+# del EVENTO 25 parecia proteger mas, pero esa diferencia era la fuga
+# de semilla (604,5 frente a 640,1 MW; ver VIGENTE abajo)- pero si para no presentar el 25 como
 # finamente optimizado: cualquier valor entre 5 y 100 se comporta igual.
 #
 # verificar_guarda_lambda() sigue en pie como red de seguridad en tiempo
@@ -427,8 +427,16 @@ def deslastre_desde_asignacion(asignacion, alivio_real, escalones_disparados):
 # en regimen normal - quedaba efectivamente apagado. Ese "precipicio"
 # era un sintoma de la restriccion blanda, no una propiedad de lambda.
 #
+# VIGENTE (20-nov-2026): con planes independientes del evento (8 semillas,
+# ver SEMILLA_PLAN_BASE) y el objetivo sobre la demanda medida, lambda
+# apenas importa: 774,2 / 781,2 / 775,9 / 777,5 / 780,3 MW de BTM sano para
+# lambda 0,5 / 5 / 25 / 60 / 100, todos al 100,0 % del objetivo y sin orden
+# claro. 25 se conserva porque no hay razon para cambiarlo. Las tablas de
+# abajo son HISTORIA: se midieron con la fuga de semilla (plan y evento con
+# la misma semilla), que es lo que hacia parecer que 25 protegia mas.
+#
 # Medido con la suficiencia dura (3 semillas, penetracion real 18,6%
-# de BTM PRODUCIENDO sobre la demanda espanola):
+# de BTM PRODUCIENDO sobre la demanda espanola), CON LA FUGA:
 #   lambda   % del objetivo   BTM sano perdido
 #     0,5        100,4%            712,6 MW
 #     5,0        100,4%            640,1 MW
@@ -443,7 +451,7 @@ def deslastre_desde_asignacion(asignacion, alivio_real, escalones_disparados):
 #   482,9 / 451,3 / 441,3  con la placa de abril, pero con el desglose
 #                          por comunidad sin reescalar (las 3 conocidas
 #                          pesaban el 64,5% del total en vez del 50,2%)
-#   712,6 / 640,1 / 604,5  VIGENTE: placa de abril y desglose reescalado
+#   712,6 / 640,1 / 604,5  placa de abril y desglose reescalado
 #                          proporcionalmente (1-nov-2026)
 #
 # El reescalado SUBE el BTM sano perdido porque reparte el BTM de forma
@@ -458,6 +466,14 @@ def deslastre_desde_asignacion(asignacion, alivio_real, escalones_disparados):
 # escenario) y la penalizacion una, asi que el peso efectivo era
 # lambda/5. Corregido eso, los dos valores son ya conmensurables.
 LAMBDA_BTM_ESPANA = 25.0
+
+# Semillas (20-nov-2026): el evento real se sortea con SEMILLA_EVENTO y los
+# planes del MILP con SEMILLA_PLAN_BASE + k, k = 0..N_SEMILLAS_PLAN-1, para
+# que el plan no conozca la caida barra a barra del evento (ver la nota en
+# ejecutar_espana). La dinamica de E4 no cambia: depende solo del evento.
+SEMILLA_EVENTO = 0
+SEMILLA_PLAN_BASE = 100
+N_SEMILLAS_PLAN = 8
 
 
 def verificar_guarda_lambda(asignacion, vara, objetivos, lam, umbral_pct=0.75):
@@ -527,11 +543,9 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
               f"{carga.sum():.1f} MW de demanda "
               f"({100*btm.sum()/carga.sum():.1f}%)")
 
-    # --- Plan del MILP, decidido ANTES del evento --------------------------
-    btm_est = estimar_btm(btm, region, semilla=0)
-    caido_real, resto_real = aplicar_caida_btm(btm, caida_pct, semilla=0)
-    _, resto_est = aplicar_caida_btm(btm_est, caida_pct, semilla=0)
-    alv, piso = escenarios_alivio(carga, btm_est, caida_pct, semilla=0)
+    # --- El evento real: la caida de BTM barra a barra (semilla 0) ----------
+    caido_real, resto_real = aplicar_caida_btm(btm, caida_pct,
+                                               semilla=SEMILLA_EVENTO)
     fraccion_acumulada = [0.15, 0.30, 0.40, 0.50]
     # OBJETIVO DE CADA ESCALON: sobre la demanda MEDIDA, no sobre el
     # alivio estimado.
@@ -554,12 +568,21 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
     # BTM sigue entrando donde le corresponde: en el ALIVIO que cada barra
     # entrega (columnas de `alv`), no en cuanto hay que deslastrar.
     demanda_medida = float(carga.sum())
-    objetivos = pd.DataFrame({
-        sc: [demanda_medida * f for f in fraccion_acumulada]
-        for sc in alv.columns})
-    asign_milp = milp_asignacion(alv, resto_est, objetivos, lam=lam,
-                                 alivio_piso=piso, verbose=verbose)
-    verificar_guarda_lambda(asign_milp, piso, objetivos, lam)
+
+    def _plan(semilla, mostrar=False):
+        """Plan del MILP, decidido ANTES del evento, con el BTM estimado y
+        los escenarios de caida sorteados con `semilla`."""
+        btm_est = estimar_btm(btm, region, semilla=semilla)
+        _, resto_est = aplicar_caida_btm(btm_est, caida_pct, semilla=semilla)
+        alv, piso = escenarios_alivio(carga, btm_est, caida_pct,
+                                      semilla=semilla)
+        objetivos = pd.DataFrame({
+            sc: [demanda_medida * f for f in fraccion_acumulada]
+            for sc in alv.columns})
+        asign = milp_asignacion(alv, resto_est, objetivos, lam=lam,
+                                alivio_piso=piso, verbose=mostrar)
+        verificar_guarda_lambda(asign, piso, objetivos, lam)
+        return asign
 
     # alivio real: lo que de verdad se consigue al abrir cada bus (con el
     # BTM VERDADERO, no el estimado - es lo que pasa al abrir el interruptor)
@@ -593,10 +616,19 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
 
     # --- Reparto MILP BTM-aware, sobre los escalones que de verdad
     # dispararon en la traza de arriba ---------------------------------------
-    deslastre_milp = deslastre_desde_asignacion(
-        asign_milp, alivio_real, traza['escalones'])
-    sano_milp = float(resto_real.reindex(deslastre_milp.index).fillna(0.0).sum())
-
+    #
+    # EL PLAN Y EL EVENTO NO COMPARTEN SEMILLA (20-nov-2026). Hasta esta fecha
+    # el plan se sorteaba con la MISMA semilla que el evento (0), y
+    # `aplicar_caida_btm` sorteaba entonces las MISMAS fracciones de caida
+    # barra a barra para el plan (sobre el BTM estimado) y para la realidad:
+    # el plan sabia de antemano que barras iban a perder su BTM, algo que
+    # ningun operador puede saber. Esa fuga daba el 26,4 % que se citaba.
+    # Con planes sorteados independientemente del evento la ventaja cae a un
+    # 1-2 %: el BTM de este modelo se reparte proporcional a la carga dentro
+    # de cada region (la razon BTM/carga toma solo 4 valores en 1.216
+    # barras), asi que el MILP casi no tiene heterogeneidad que aprovechar.
+    # Se promedian N_SEMILLAS_PLAN planes (razon de medias) y se informa
+    # tambien la cifra con la semilla compartida, como control de la fuga.
     # --- Referencia: reparto proporcional ciego, mismos MW pedidos por la
     # frecuencia (mismo --comparar que usa Colombia) - corta una fraccion de
     # cada bus proporcional a su alivio, sin saber donde queda BTM sano. ---
@@ -612,8 +644,6 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
     #
     # El exceso del MILP se reporta aparte, porque es un resultado por si
     # mismo: la granularidad de barra tiene un coste.
-    mw_entregado_milp = float(deslastre_milp.sum())
-    deslastre_prop = _proporcional(alivio_real, mw_entregado_milp)
     # El BTM sano que destruye el reparto proporcional hay que PONDERARLO
     # por la fraccion que corta en cada bus.
     #
@@ -629,16 +659,43 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
     # MW destruye ~1.992 MW de BTM sano (200 sorteos), que coincide con la
     # cifra ponderada y no con la anterior. Mismo error que ya se habia
     # detectado y corregido en el modelo colombiano.
-    frac_cortada = (deslastre_prop / alivio_real.reindex(deslastre_prop.index)
-                    ).clip(upper=1.0).fillna(0.0)
-    sano_prop = float((resto_real.reindex(deslastre_prop.index).fillna(0.0)
-                       * frac_cortada).sum())
+    def _comparar(asign):
+        d_milp = deslastre_desde_asignacion(asign, alivio_real,
+                                            traza['escalones'])
+        s_milp = float(resto_real.reindex(d_milp.index).fillna(0.0).sum())
+        mw = float(d_milp.sum())
+        d_prop = _proporcional(alivio_real, mw)
+        frac = (d_prop / alivio_real.reindex(d_prop.index)
+                ).clip(upper=1.0).fillna(0.0)
+        s_prop = float((resto_real.reindex(d_prop.index).fillna(0.0)
+                        * frac).sum())
+        return mw, float(d_prop.sum()), s_milp, s_prop
+
+    por_semilla = []
+    for k in range(N_SEMILLAS_PLAN):
+        sem = SEMILLA_PLAN_BASE + k
+        mw, mw_p, s_m, s_p = _comparar(_plan(sem, mostrar=(verbose and k == 0)))
+        por_semilla.append({'semilla_plan': sem, 'semilla_evento': SEMILLA_EVENTO,
+                            'MW_MILP': mw, 'MW_proporcional': mw_p,
+                            'BTM_sano_MILP_MW': s_m,
+                            'BTM_sano_proporcional_MW': s_p})
+    tabla = pd.DataFrame(por_semilla)
+    mw_entregado_milp = float(tabla.MW_MILP.mean())
+    mw_prop = float(tabla.MW_proporcional.mean())
+    sano_milp = float(tabla.BTM_sano_MILP_MW.mean())
+    sano_prop = float(tabla.BTM_sano_proporcional_MW.mean())
+    # control: el plan con la semilla del evento (la fuga, retirada)
+    _, _, fuga_milp, fuga_prop = _comparar(_plan(SEMILLA_EVENTO))
+    sufijo = '' if abs(caida_pct - 80.0) < 1e-9 else f'_caida{caida_pct:.0f}'
+    tabla.to_csv(config.salida(f'comparacion_deslastre_{red}{sufijo}_semillas.csv'),
+                 index=False)
 
     if verbose:
         pedido = traza['deslastre_total']
         exceso = 100.0 * (mw_entregado_milp - pedido) / max(pedido, 1e-9)
         print(f"\n--- Comparacion del reparto, a MW IGUALES "
-              f"({mw_entregado_milp:.1f} MW desconectados por ambos) ---")
+              f"({mw_entregado_milp:.1f} MW de media, {N_SEMILLAS_PLAN} planes "
+              f"independientes del evento) ---")
         print(f"  MILP BTM-aware      : BTM sano perdido = {sano_milp:.1f} MW")
         print(f"  proporcional ciego  : BTM sano perdido = {sano_prop:.1f} MW "
               f"(ponderado por la fraccion cortada en cada barra)")
@@ -647,6 +704,13 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
                   f"menos BTM sano destruido")
         print(f"  [la frecuencia pedia {pedido:.1f} MW; el MILP entrega "
               f"{exceso:+.1f}% por abrir barras enteras]")
+        print(f"  por semilla del plan: ventaja de "
+              f"{100*(1-tabla.BTM_sano_MILP_MW/tabla.BTM_sano_proporcional_MW).min():.1f} "
+              f"a {100*(1-tabla.BTM_sano_MILP_MW/tabla.BTM_sano_proporcional_MW).max():.1f} %")
+        if fuga_prop > 0:
+            print(f"  control, plan con la SEMILLA DEL EVENTO (fuga, no citar): "
+                  f"{fuga_milp:.1f} frente a {fuga_prop:.1f} MW, "
+                  f"{100*(1-fuga_milp/fuga_prop):.1f} % menos")
 
     # --- Grafico: una sola trayectoria "con deslastre" (fisicamente igual
     # para los dos metodos de reparto - lo que cambia es el BTM sano
@@ -668,7 +732,7 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
     ax.legend()
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig(config.visualizacion(f'deslastre_btm_frecuencia_{red}.png'), dpi=150)
+    plt.savefig(config.visualizacion(f'deslastre_btm_frecuencia_{red}{sufijo}.png'), dpi=150)
 
     # --- CSV de comparacion ---------------------------------------------
     filas = [
@@ -678,17 +742,18 @@ def ejecutar_espana(caida_pct=80.0, lam=None, verbose=True, red='apagon'):
          'BTM_sano_perdido_MW': 0.0},
         {'metodo': 'MILP BTM-aware', 'nadir_Hz': traza['nadir'],
          'colapso': traza['colapso'],
-         'MW_deslastrado': float(deslastre_milp.sum()),
+         'MW_deslastrado': mw_entregado_milp,
          'BTM_sano_perdido_MW': sano_milp},
         {'metodo': 'proporcional ciego', 'nadir_Hz': traza['nadir'],
          'colapso': traza['colapso'],
-         'MW_deslastrado': float(deslastre_prop.sum()),
+         'MW_deslastrado': mw_prop,
          'BTM_sano_perdido_MW': sano_prop},
     ]
     pd.DataFrame(filas).to_csv(
-        config.salida(f'comparacion_deslastre_{red}.csv'), index=False)
-    print("\n✓ Grafico en resultados/visualizaciones/deslastre_btm_frecuencia.png")
-    print(f"✓ Comparacion en resultados/comparacion_deslastre_{red}.csv")
+        config.salida(f'comparacion_deslastre_{red}{sufijo}.csv'), index=False)
+    print(f"\n✓ Grafico en resultados/visualizaciones/deslastre_btm_frecuencia_{red}{sufijo}.png")
+    print(f"✓ Comparacion en resultados/comparacion_deslastre_{red}{sufijo}.csv "
+          f"(media de {N_SEMILLAS_PLAN} planes; por semilla en *_semillas.csv)")
     return {'sin_deslastre': traza_sin, 'con_deslastre': traza,
            'sano_milp': sano_milp, 'sano_prop': sano_prop}
 

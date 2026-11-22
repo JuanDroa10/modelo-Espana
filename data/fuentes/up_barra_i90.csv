@@ -1,0 +1,58 @@
+up,central,carrier,destino,fuente_identificacion
+ALZ1,C.N. Almaraz 1,Nuclear,G0093,OMIE
+ALZ2,C.N. Almaraz 2,Nuclear,G0092,OMIE
+ASC1,C.N. Ascó 1,Nuclear,G0139,OMIE
+ASC2,C.N. Ascó 2,Nuclear,G0138,OMIE
+COF1,C.N. Cofrentes,Nuclear,G0160,OMIE
+VAN2,C.N. Vandellós II,Nuclear,G0285,OMIE
+TRL1,C.N. Trillo,Nuclear,G0307,OMIE
+ACE3,C.C. Aceca 3,Combined_cycle,ES00490,OMIE
+ACE4,C.C. Aceca 4,Combined_cycle,ES00490,OMIE
+AMBIETA,C.C. Amorebieta,Combined_cycle,ES01025,OMIE
+ARCOS1,C.C. Arcos 1,Combined_cycle,ES00007,OMIE
+ARCOS2,C.C. Arcos 2,Combined_cycle,ES00007,OMIE
+ARRU1,C.C. Arrúbal 1,Combined_cycle,ES00136,codigo (no figura en el listado vigente de OMIE)
+ARRU2,C.C. Arrúbal 2,Combined_cycle,ES00136,codigo (no figura en el listado vigente de OMIE)
+BES3,C.C. Besós 3,Combined_cycle,ES01113,OMIE
+BES4,C.C. Besós 4,Combined_cycle,ES01113,OMIE
+BES5,C.C. Besós 5,Combined_cycle,ES01113,OMIE
+CAMGI10,C.C. Campo de Gibraltar 10,Combined_cycle,ES00190,OMIE
+CAMGI20,C.C. Campo de Gibraltar 20,Combined_cycle,ES00190,codigo (no figura en el listado vigente de OMIE)
+SROQ2,C.C. San Roque 2,Combined_cycle,ES00187,OMIE
+CTGN1,C.C. Cartagena 1,Combined_cycle,ES00347,OMIE
+CTGN3,C.C. Cartagena 3,Combined_cycle,ES00347,OMIE
+CTJON1,C.C. Castejón 1,Combined_cycle,ES00153,codigo (no figura en el listado vigente de OMIE)
+CTJON2,C.C. Castejón 2,Combined_cycle,ES00153,OMIE
+CTJON3,C.C. Castejón 3,Combined_cycle,ES00153,codigo (no figura en el listado vigente de OMIE)
+CTN3,C.C. Castellón 3,Combined_cycle,ES00267,OMIE
+CTNU,C.C. Castelnou,Combined_cycle,ES00080,OMIE
+ECT3,C.C. Escatrón 3,Combined_cycle,ES00269,OMIE
+MALA1,C.C. Málaga 1,Combined_cycle,ES01089,OMIE
+PALOS1,C.C. Palos 1,Combined_cycle,ES00478,OMIE
+PALOS2,C.C. Palos 2,Combined_cycle,ES00478,OMIE
+PBCN1,C.C. Puerto de Barcelona 1,Combined_cycle,ES00521,OMIE
+PBCN2,C.C. Puerto de Barcelona 2,Combined_cycle,ES00521,OMIE
+PGR5,C.C. As Pontes 5,Combined_cycle,ES00072,OMIE
+PVENT2,C.C. Plana del Vent 2,Combined_cycle,ES00370,OMIE
+SAGU1,C.C. Sagunto 1,Combined_cycle,ES00117,OMIE
+SAGU2,C.C. Sagunto 2,Combined_cycle,ES00117,OMIE
+SBO3,C.C. Sabón 3,Combined_cycle,ES00427,OMIE
+STC4,C.C. Santurce 4,Combined_cycle,ES00583,OMIE
+SRI4,C.C. Soto de Ribera 4,Combined_cycle,ES00558,codigo (no figura en el listado vigente de OMIE)
+SRI5,C.C. Soto de Ribera 5,Combined_cycle,ES00558,codigo (no figura en el listado vigente de OMIE)
+ABO2,C.T. Aboño 2,Coal,ES00101,codigo (no figura en el listado vigente de OMIE)
+SRI3,C.T. Soto de Ribera 3,Coal,ES00558,OMIE
+BRR1,C.T. Los Barrios,Coal,ES00187,codigo y balance de carbón de ENTSO-E (no figura en el listado vigente de OMIE)
+MUEL,C.H. La Muela (turbinación),Pumped_storage,ES00241;ES00366,OMIE
+MLTG,C.H. Moralets (generación),Pumped_storage,ES00891,OMIE
+SLTG,Estany Gento-Sallente (turbinación),Pumped_storage,ES00890,OMIE
+AGUG,C.H. Aguayo (generación),Pumped_storage,ES01176,OMIE
+UFBG,C.H. Bolarque (generación),Pumped_storage,ES00389,OMIE
+BAHIAB,C.C. Bahía de Bizkaia,Combined_cycle,ES00585,OMIE
+MUEB,C.H. La Muela (bombeo),Pumped_storage,ES00241;ES00366,OMIE
+DUEB,UGH Duero (bombeo: Villarino y Aldeadávila II),Pumped_storage,ES00128;ES00246,OMIE
+SILB,UGH Sil (bombeo),Pumped_storage,ES01008,OMIE
+AGUB,C.H. Aguayo (bombeo),Pumped_storage,ES01176,OMIE
+SLTB,Estany Gento-Sallente (bombeo),Pumped_storage,ES00890,OMIE
+UFBB,C.H. Bolarque (bombeo),Pumped_storage,ES00389,OMIE
+GUIB,C.H. Guillena (bombeo),Pumped_storage,ES00034,OMIE

@@ -12,7 +12,17 @@ cruzar con un registro externo como PARATEC), asi que 's_sinc' es mas simple
 que en Colombia: un generador esta "girando" si su p_set es una fraccion no
 trivial de su p_nom (esta ya despachado en el punto de operacion), no hace
 falta calcular cuantas maquinas de una planta multi-unidad estan acopladas."""
+import os as _os
+
 import numpy as np
+
+# Calibracion de la inercia del APAGON contra ENTSO-E (19-nov-2026): energia
+# cinetica a las 12:30 segun la Tabla 2-4 del informe final (Espana 97.590 MW.s,
+# Portugal 21.884 MW.s) dividida por la que daba el modelo (78.189,7 y
+# 10.318,6 MW.s). La aplica build_blackout_snapshot.py a la H de los
+# generadores de iberia_blackout.nc; la punta NO se calibra (ENTSO-E solo da
+# la cifra de ese instante).
+CALIBRACION_INERCIA_ENTSOE = {'ES': 1.2481, 'PT': 2.1208}
 
 F0 = 50.0                # Hz, frecuencia nominal europea (Colombia usa 60)
 ESTATISMO = 0.05          # 5%, mismo valor que el STN - no hay dato real
@@ -358,7 +368,8 @@ def simular_frecuencia(sis, eventos, con_deslastre=False,
                        fracciones_bombeo=EDAC_FRACCION_BOMBEO_ESPANA,
                        umbrales=EDAC_UMBRALES_HZ_ESPANA,
                        fracciones=EDAC_FRACCION_ESPANA,
-                       con_agc=True, con_lfsm=True, t_fin=None):
+                       con_agc=True, con_lfsm=True, t_fin=None,
+                       f_inicial=None, primaria_inicial='nula'):
     """Integra la ecuacion de oscilacion tras una serie de perturbaciones.
 
     `eventos` es una lista de dicts {'t': segundos, 'dP_gen': MW perdidos
@@ -382,6 +393,14 @@ def simular_frecuencia(sis, eventos, con_deslastre=False,
     defecto T_FIN): para ver la vuelta a 50 Hz hacen falta un par de
     minutos.
 
+    `f_inicial` y `primaria_inicial` (19-nov-2026) solo los usa la
+    validacion de la fase de isla del 28-A (validar_28a_isla.py), que
+    arranca en el instante de la separacion con la frecuencia MEDIDA en vez
+    de a 50 Hz. `primaria_inicial='estacionaria'` arranca la parte de
+    recalentamiento del gobernador ya desplegada para esa desviacion;
+    'nula', sin desplegar. Con los valores por defecto (None, 'nula') el
+    comportamiento es exactamente el de antes.
+
     Devuelve (t, f, traza) - sin reparto por bus: eso lo decide el MILP de
     deslastre_btm_espana.py (E2/E4) a partir de traza['escalones'].
     """
@@ -394,7 +413,7 @@ def simular_frecuencia(sis, eventos, con_deslastre=False,
     n = int((T_FIN if t_fin is None else float(t_fin)) / DT)
     t = np.arange(n) * DT
     f = np.zeros(n)
-    f[0] = F0
+    f[0] = F0 if f_inicial is None else float(f_inicial)
 
     P_gen = sis.P_gen
     P_carga = sis.P_carga
@@ -405,6 +424,12 @@ def simular_frecuencia(sis, eventos, con_deslastre=False,
     a_gob = float(np.exp(-DT / T_GOBERNADOR))
     dP_prim = 0.0
     x_recal = 0.0       # estado de la parte de recalentamiento de la turbina
+    if f_inicial is not None and primaria_inicial == 'estacionaria':
+        _df = (f[0] - F0) / F0
+        _bm = BANDA_MUERTA_HZ / F0
+        _du = (_df + _bm) if _df < -_bm else ((_df - _bm) if _df > _bm else 0.0)
+        x_recal = max(-sis.reserva_baja,
+                      min(-_du / sis.R_eq * sis.P_gen, sis.reserva))
     dP_agc = 0.0        # aporte acumulado de la regulacion secundaria
     dP_lfsm = 0.0       # reduccion por sobrefrecuencia (negativa)
     a_lfsm = float(np.exp(-DT / T_LFSM_O))

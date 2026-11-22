@@ -22,8 +22,15 @@ from iberia import dinamica_frecuencia as din
 from iberia import deslastre_btm_espana as D
 from iberia.btm_regional import produccion_btm_por_bus, region_de_bus
 
-CANDIDATOS_LAMBDA = (0.5, 5.0, 25.0)   # mismos candidatos que probo Colombia
-SEMILLAS = (0, 1, 2)
+# 0,5 / 5 / 25 son los candidatos que probo Colombia; 60 y 100 se anaden
+# (20-nov-2026) para ver si el efecto satura.
+CANDIDATOS_LAMBDA = (0.5, 5.0, 25.0, 60.0, 100.0)
+# EL PLAN NO COMPARTE SEMILLA CON EL EVENTO (20-nov-2026). Antes se usaba la
+# misma `semilla=s` para la caida estimada del plan y para la real, y
+# aplicar_caida_btm sorteaba las MISMAS fracciones por barra: el plan conocia
+# la caida. Ahora, igual que ejecutar_espana, el evento es uno
+# (D.SEMILLA_EVENTO) y los planes se sortean con D.SEMILLA_PLAN_BASE + k.
+SEMILLAS = tuple(D.SEMILLA_PLAN_BASE + k for k in range(D.N_SEMILLAS_PLAN))
 CAIDA_PCT = 80.0
 FRACCION_ACUMULADA = np.cumsum([0.15, 0.15, 0.10, 0.10])
 
@@ -45,18 +52,21 @@ def main():
     region = {b: region_de_bus(n.buses.at[b, 'x'], n.buses.at[b, 'y'])
              for b in btm.index}
 
+    caido_real, resto_real = D.aplicar_caida_btm(
+        btm, CAIDA_PCT, semilla=D.SEMILLA_EVENTO)
+    demanda_medida = float(carga.sum())
     filas = []
     for lam in CANDIDATOS_LAMBDA:
         for s in SEMILLAS:
             btm_est = D.estimar_btm(btm, region, semilla=s)
             caido_est, resto_est = D.aplicar_caida_btm(
                 btm_est, CAIDA_PCT, semilla=s)
-            caido_real, resto_real = D.aplicar_caida_btm(
-                btm, CAIDA_PCT, semilla=s)
             alv, piso = D.escenarios_alivio(
                 carga, btm_est, CAIDA_PCT, semilla=s)
+            # objetivo sobre la DEMANDA MEDIDA, como ejecutar_espana (antes
+            # era alv[sc].sum() * f, que inflaba la base con el BTM estimado)
             objetivos = pd.DataFrame({
-                sc: [float(alv[sc].sum()) * f for f in FRACCION_ACUMULADA]
+                sc: [demanda_medida * f for f in FRACCION_ACUMULADA]
                 for sc in alv.columns})
             asign = D.milp_asignacion(alv, resto_est, objetivos, lam=lam,
                                       alivio_piso=piso)

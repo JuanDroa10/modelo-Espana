@@ -45,11 +45,14 @@ _PUNTO = {'tipo': 'apagon', 'etiqueta': '28-abr-2025 12:33 (apagon iberico)'}
 
 _ESCENARIOS = [
     ('apagon', '28-abr-2025 12:33 (apagon iberico)',
-     'MEDIDO (ENTSO-E, 12:15 CEST) con el balance cerrado; el N-1 corre '
-     'sobre un caso base LIMPIO', '92'),
-    ('punta', '15-ene 20-21 h (punta invernal nocturna)',
-     'DERIVADO; su caso base arranca con 5 sobrecargas (despacho sin '
-     'orden de merito): el N-1 se cita contra esa referencia', '93'),
+     'MEDIDO (ENTSO-E 12:15 CEST, convencional por central con el I90) con '
+     'el balance cerrado; su caso base arranca con 1 sobrecarga (L1146, '
+     '104 %): el N-1 se cita contra esa referencia', '92'),
+    ('punta', '15-ene-2025 20:45 (punta invernal nocturna)',
+     'MEDIDO (ENTSO-E, convencional por central con el I90) con el balance '
+     'cerrado; su caso base arranca con 9 sobrecargas (4 en la frontera con '
+     'Francia): el N-1 se cita contra esa referencia', '92'),
+
     ('escenario', 'exportacion generica de 3.000 MW (despacho uniforme)',
      'SINTETICO; no representa ninguna hora real', '93'),
 ]
@@ -260,7 +263,7 @@ def elegir_punto(primera_vez=False):
 # ---------------------------------------------------------------------------
 
 def sim_entsoe():
-    correr(['iberia.validar_traza_28a'])
+    correr(['iberia.validar_28a_isla'])
 
 
 def sim_n1():
@@ -631,8 +634,12 @@ def con_cobertura():
         ("impedancias de linea", "DATO, validado",
          "contra la impedancia caracteristica Zc"),
         ("placa por generador", "DATO", "generation_data.csv"),
-        ("despacho por tecnologia", "DERIVADO",
-         "escalado uniforme, SIN orden de merito"),
+        ("despacho por tecnologia", "DATO",
+         "ENTSO-E (y ESIOS) en los dos puntos medidos"),
+        ("despacho por central", "DATO",
+         "nuclear, ciclos, carbon y bombeo: P48 del I90 de REE"),
+        ("reparto de renovables y demanda", "DERIVADO",
+         "proporcional a la placa y por comunidad autonoma"),
         ("inercia H por maquina", "SUPUESTO",
          "por tecnologia; no hay fuente publica por unidad"),
         ("factor de carga acoplada", "SUPUESTO",
@@ -675,11 +682,16 @@ def con_escenarios():
             "espanola y portuguesa e intercambios con Francia y Portugal. El "
             "balance se cierra con el flujo AC; lo unico que no se representa "
             "es la exportacion a Marruecos y Andorra (~0,7 GW). Lo que no es "
-            "dato es el reparto entre generadores y barras. El de PUNTA se "
-            "deriva en build_punta_snapshot.py. El tercero es sintetico.")
+            "dato es el reparto de las renovables y la demanda entre barras: "
+            "la nuclear, los ciclos, el carbon y el bombeo van central a "
+            "central con el P48 del I90 de REE. El de PUNTA (15-ene-2025, "
+            "20:45) se construye igual en build_punta_snapshot.py. El tercero "
+            "es sintetico.")
     print()
     parrafo("El apagon es el escenario sobre el que descansan el BTM y el "
-            "deslastre, y es el unico cuyo caso base N-1 esta limpio.")
+            "deslastre. Ninguno de los dos casos base esta del todo limpio: el "
+            "apagon tiene L1146 al 104 % (los ciclos de Barcelona estaban "
+            "parados) y la punta 9 lineas sobrecargadas.")
 
 
 # ---------------------------------------------------------------------------
@@ -850,7 +862,8 @@ def _op(grupo, nombre, accion, explica, sobre=PUNTO, no_aplica=None):
 
 _SIN_BTM_NOCHE = ("en la punta nocturna el BTM solar produce cero: el "
                   "umbral no esta definido")
-_SOLO_APAGON = "se calcula sobre el apagon, el unico punto con medida real"
+_SOLO_APAGON = ("se calcula sobre el apagon: es el unico punto con BTM solar "
+                "produciendo")
 
 MENU = [
     # ======================= SOBRE ESTE PUNTO ============================
@@ -879,11 +892,15 @@ MENU = [
         "No supone que el sistema aguanta el primer golpe: encadena la "
         "caida de BTM con la perturbacion y deja correr la frecuencia hasta "
         "que el sistema se estabiliza o colapsa."),
-    _op('Simular', 'Validacion contra la traza real del 28-A', sim_entsoe,
-        "Alimenta el modelo con el evento real documentado y compara su "
-        "frecuencia, segundo a segundo, con la que registro el Fraunhofer ISE "
-        "en Malaga y publico NERC. Es la unica medida independiente contra la "
-        "que se contrasta la dinamica.",
+    _op('Simular', 'Validacion contra la frecuencia medida del 28-A', sim_entsoe,
+        "Alimenta el modelo con la secuencia de eventos al milisegundo del "
+        "informe final de ENTSO-E y lo compara por fases con la frecuencia "
+        "medida por PMU en Malaga y Zurich: sincronizada con Europa, perdida "
+        "de sincronismo (error medio 0,084 Hz) e isla, donde calcula el "
+        "deficit minimo que exige la caida medida (al menos 5,6 GW que no "
+        "aparecen en ningun registro). Compara ademas la energia cinetica del "
+        "modelo con la de ENTSO-E (119,5 GW.s), con la que esta calibrada la "
+        "inercia del apagon.",
         no_aplica={'punta': "la traza medida es la del 28 de abril a las "
                             "12:33",
                    'escenario': "el escenario generico no es ningun "

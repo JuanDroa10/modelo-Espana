@@ -1,0 +1,16 @@
+Frecuencia medida por PMU el 28-abr-2025, de 12:32:00 a 12:33:30 CEST (10:32:00-10:33:30 UTC).
+
+Fuente: Obusevs, A., Korba, P., Segundo Sevilla, F. R. y Ramirez-Gonzalez, M. (2026).
+"Inter-area oscillations in Continental Europe, 2023-2026: a case-based PMU dataset" (v1)
+[Data set]. Zenodo. https://doi.org/10.5281/zenodo.23541810 . Licencia CC BY 4.0.
+Caso CE048_20250428_1019_KNOWN_IBERIAN_BLACKOUT, ficheros native/ES_Malaga__f_Hz.csv.gz
+(10 muestras/s) y native/CH_ZHAW__f_Hz.csv.gz (50 muestras/s, aqui promediado a 100 ms).
+
+Columnas: t_s (segundos desde 12:32:00 CEST, en el reloj del registro de Malaga),
+hora_utc, f_malaga_hz, f_zurich_hz.
+
+Avisos:
+- Los datos NO estan corregidos por latencia. Segun mode_shape.csv del propio conjunto,
+  la serie de Malaga va 0,411 s por detras de la de Zurich; validar_28a_isla.py lo corrige.
+- Malaga es una PMU de distribucion. Desde ~12:33:20,8 su valor se congela en 49,253 Hz
+  y a las 12:33:27 salta a 50,0: es perdida de dato, no frecuencia real.

@@ -22,7 +22,15 @@ ESPERADO = {
     # cerrado (ver build_blackout_snapshot). Antes: P_gen 31.600, P_carga
     # 31.800, Ek 85,5 GW.s, reserva 1.551,2, exportacion -200, t_colapso
     # 1,87 s, P_carga_es 27.000. El escenario calibrado SIGUE colapsando.
-    'P_gen': 31828.4, 'P_carga': 29951.4,
+    #
+    # 19-nov-2026: la convencional pasa a asignarse central a central con el
+    # I90 (4 de 7 nucleares y 6 ciclos en servicio; build_blackout_i90.py).
+    # Los totales por tecnologia no cambian (P_gen igual); bajan las
+    # perdidas, y la demanda en barras sube 79 MW para que demanda +
+    # perdidas siga siendo 24.944. Antes: P_carga 29.951,4, Ek 89,16 GW.s,
+    # reserva 1.638,7, exportacion 1.877,0, t_colapso 1,91, P_carga_es
+    # 24.137,4. El escenario calibrado SIGUE colapsando.
+    'P_gen': 31828.4, 'P_carga': 30030.8,
     # ENERGIA CINETICA, no H y S_base por separado.
     #
     # H y S_base NO son magnitudes fisicas independientes: son una
@@ -51,12 +59,15 @@ ESPERADO = {
     # validaba no aparecen en el informe de REE, ni en NERC, ni en las
     # fuentes secundarias del proyecto, y la coincidencia que se les
     # atribuia la producia el resto termico aplastado al 1%.
-    'energia_cinetica_GWs': 89.16,
+    # 19-nov-2026: 88,51 -> 119,47. La H del apagon se calibra con la energia
+    # cinetica que calcula ENTSO-E a las 12:30 (Tabla 2-4 del informe final,
+    # 119.474 MW.s); ver iberia/construccion/build_blackout_snapshot.py.
+    'energia_cinetica_GWs': 119.47,
     # 1.965,7 -> 1.551,2 por lo mismo, y es una CORRECCION, no un efecto
     # lateral: de la reserva vieja 486 MW eran de la nuclear, que no
     # presta regulacion primaria (defecto ya levantado en la auditoria del
     # 3-oct). Con la nuclear al 0,98 su margen cae a ~69 MW.
-    'reserva': 1638.7, 'exportacion': 1877.0,
+    'reserva': 1624.1, 'exportacion': 1797.6,
     # t_colapso, NO nadir. El 'nadir=47,497' que este test fijaba antes
     # era la primera muestra bajo F_COLAPSO=47,5: el truncamiento de la
     # integracion, no un minimo. Un test que congela un artefacto lo
@@ -77,8 +88,8 @@ ESPERADO = {
     # calibrado colapsa sin ningun BTM adicional- no cambia. La energia
     # cinetica, la reserva y el resto de este test no se mueven, como debe
     # ser: el regulador no toca el punto de operacion.
-    't_colapso': 1.91,
-    'P_carga_es': 24137.4,
+    't_colapso': 2.24,   # 1,90 s antes de calibrar la inercia (19-nov-2026)
+    'P_carga_es': 24216.8,
 }
 TOL = {'P_gen': 0.1, 'P_carga': 0.1, 'energia_cinetica_GWs': 0.15,
        'reserva': 0.1, 'exportacion': 0.1, 't_colapso': 0.01,

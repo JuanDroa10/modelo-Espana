@@ -1,0 +1,15 @@
+Secuencia de eventos del 28-abr-2025, transcrita de la Tabla 3-1 (pp. 116-119) de:
+ENTSO-E Expert Panel, "Final Report on the Grid Incident in Spain and Portugal on
+28 April 2025", 20 de marzo de 2026.
+
+Columnas: cluster, pais (ES, PT, IP = peninsula iberica), hora_cest, t_s (segundos desde
+12:32:00 CEST), tipo, descripcion, mw = desequilibrio electrico tal como lo da el
+informe (positivo: deficit, perdida de generacion; negativo: superavit, bombeo o carga
+desconectados). Los eventos sin MW (disparos de lineas e interconexiones, bloqueos de
+HVDC) se dejan vacios; validar_28a_isla.py les asigna su efecto y lo declara.
+
+Notas: el cluster 1 (317,30 MW) es un aumento neto de carga gradual entre 12:32:00 y
+12:32:57; la fila resumen «2a/b Total 208» se omite porque sus 18 entradas van una a
+una. Una fila del cluster 11 figura en el informe como «13:33:19.780» (errata por
+12:33:19.780). Control: bombeo desconectado en Portugal 2.098 MW (el texto del informe
+dice 2.100); en Espana, hasta 12:33:20,56, 2.477 MW («casi 2.500»).
