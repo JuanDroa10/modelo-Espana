@@ -33,7 +33,7 @@ Al iniciar el menú, se solicita seleccionar el punto de operación sobre el que
 El menú presenta los siguientes puntos:
 
 ```text
-SOBRE QUE PUNTO DE OPERACION QUIERES TRABAJAR
+PUNTO DE OPERACION SOBRE EL CUAL SE TRABAJA
   * 1) 28-abr-2025 12:33 (apagon iberico)
        MEDIDO (ENTSO-E 12:15 CEST, convencional por central con el I90) con el balance cerrado; su caso base arranca con 1 sobrecarga (L1146, 104 %): el N-1 se cita contra esa referencia
     2) 15-ene-2025 20:45 (punta invernal nocturna)
@@ -99,7 +99,7 @@ El menú permite seleccionar uno de los siguientes procedimientos:
 
 | Modalidad | Descripción | Tiempo aproximado |
 |---|---|---|
-| **Barrido completo** | Evalúa las 3.277 contingencias. Las líneas y transformadores que aíslan carga se analizan mediante topología; los generadores pequeños, mediante balance de potencia; y las restantes (2.134 en el apagón y 2.049 en la punta), mediante flujo AC. | Aproximadamente 40 minutos en el escenario del apagón y 30 minutos en el escenario de punta. |
+| **Barrido completo** | Evalúa las 3.277 contingencias. Las líneas y transformadores que aíslan carga se analizan mediante topología; los generadores pequeños, mediante balance de potencia; y las restantes (2.145 en el apagón y 2.068 en la punta), mediante flujo AC. | Aproximadamente 40 minutos en el escenario del apagón y 30 minutos en el escenario de punta. |
 | **Solo el plan** | Informa el número de contingencias de cada clase y estima el coste computacional del barrido. | Segundos. |
 | **Una contingencia concreta** | Evalúa la salida de un elemento seleccionado por su nombre, por ejemplo, `L0690` o `G0911`. | De algunos segundos a un minuto. |
 | **El ranking** | Muestra las contingencias más severas del último barrido disponible. | Inmediato, si ya existe un barrido. |
@@ -136,7 +136,7 @@ El menú solicita el porcentaje de BTM conectado mediante inversores que se desc
 
 Como referencia, en el escenario del apagón y con el valor predeterminado, el sistema colapsa a los 9,27 s aun con los seis escalones activados: el esquema desconecta como máximo la mitad de la demanda más el bombeo (15.140 MW) frente a un evento de 19.715 MW. El esquema completo evita el colapso hasta una desconexión de BTM del 74 %. La comparación entre el MILP y el reparto proporcional se realiza igualmente, porque se mide sobre la misma secuencia de escalones disparados.
 
-El plan del MILP se decide sin conocer el evento: se resuelve con ocho sorteos del BTM estimado independientes de la desconexión real, y el resultado es la media. En el escenario del apagón el MILP destruye un 1,5 % menos de generación embebida sana que el reparto proporcional (775,9 frente a 787,6 MW), y según el sorteo la diferencia va de −1,6 a 7,0 %. La ventaja es pequeña porque el modelo reparte el BTM entre las barras de cada región en proporción a la carga, así que no hay diferencias espaciales que el MILP pueda aprovechar.
+El plan del MILP se decide sin conocer el evento: se resuelve con ocho sorteos del BTM estimado independientes de la desconexión real, y el resultado es la media. En el escenario del apagón el MILP destruye un 1,5 % menos de generación embebida sana que el reparto proporcional (775,9 frente a 787,6 MW), y según el sorteo la diferencia oscila entre −1,6 y 7,0 %. La ventaja es pequeña porque el modelo reparte el BTM entre las barras de cada región en proporción a la carga, por lo que no hay diferencias espaciales que el MILP pueda aprovechar.
 
 La ejecución tarda alrededor de un minuto en el apagón y unos veinte en la punta, donde casi no hay BTM y el MILP agota su tiempo límite en cada escalón. Genera:
 
@@ -224,7 +224,7 @@ Esta opción está disponible únicamente para el escenario del apagón. El MILP
 El menú ofrece dos alternativas:
 
 - **Operación normal** (aproximadamente 1 minuto): analiza escenarios sin perturbación, con el BTM conectado, para distintos niveles de penetración. Este régimen permite evaluar hasta qué valor de λ puede aumentarse la penalización sin que el esquema deje de cumplir su objetivo.
-- **Calibración completa** (unos dos minutos): resuelve el plan con λ = 0,5, 5, 25, 60 y 100 frente a la caída del 80 % del BTM, con ocho sorteos del plan independientes del evento. Todos los valores cubren el objetivo del esquema y dan prácticamente la misma generación embebida sana perdida (entre 774 y 781 MW de media), así que el valor predeterminado, λ = 25, no está optimizado: cualquier valor del rango se comporta igual.
+- **Calibración completa** (unos dos minutos): resuelve el plan con λ = 0,5, 5, 25, 60 y 100 frente a la caída del 80 % del BTM, con ocho sorteos del plan independientes del evento. Todos los valores cubren el objetivo del esquema y dan prácticamente la misma generación embebida sana perdida (entre 774 y 781 MW de media), por lo que el valor predeterminado, λ = 25, no está optimizado: cualquier valor del rango se comporta igual.
 
 ---
 
@@ -286,17 +286,17 @@ Antes de utilizar los resultados del modelo en un informe, presentación o publi
 
 ## 9. Problemas frecuentes
 
-**`pip install` falla al instalar PyPSA.** La causa más habitual es una versión de Python incompatible. El proyecto requiere Python 3.11 o superior. Consulta la sección [Requisitos del README](README.md#requisitos).
+**`pip install` falla al instalar PyPSA.** La causa más habitual es una versión de Python incompatible. El proyecto requiere Python 3.11 o superior. Véase la sección [Requisitos del README](README.md#requisitos).
 
-**El menú indica que faltan dependencias.** Es posible que el entorno virtual no esté activado o que `requirements.txt` no se haya instalado dentro de ese entorno. Activa el entorno e instala las dependencias indicadas en el README.
+**El menú indica que faltan dependencias.** Es posible que el entorno virtual no esté activado o que `requirements.txt` no se haya instalado dentro de ese entorno. Debe activarse el entorno e instalarse en él las dependencias indicadas en el README.
 
-**En Windows, `Activate.ps1` genera un error de `execution policy`.** Ejecuta el siguiente comando en PowerShell y vuelve a activar el entorno:
+**En Windows, `Activate.ps1` genera un error de `execution policy`.** Debe ejecutarse el siguiente comando en PowerShell y repetirse la activación del entorno:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-**El mapa con fondo cartográfico se genera sin fondo.** La capa de fondo requiere `contextily`, que no se instala de forma predeterminada debido a su dependencia de GDAL. El mapa se genera igualmente, pero sin la capa cartográfica. Para instalarla, ejecuta:
+**El mapa con fondo cartográfico se genera sin fondo.** La capa de fondo requiere `contextily`, que no se instala de forma predeterminada debido a su dependencia de GDAL. El mapa se genera igualmente, pero sin la capa cartográfica. Para instalarla, se ejecuta:
 
 ```bash
 pip install contextily
@@ -304,6 +304,6 @@ pip install contextily
 
 **El mapa interactivo aparece sin fondo cartográfico.** El navegador descarga esa capa al abrir el mapa, por lo que se necesita conexión a internet.
 
-**La primera consulta de la sesión tarda aproximadamente un minuto.** La primera consulta requiere resolver el caso base con los límites de potencia reactiva. Las consultas posteriores reutilizan el caso resuelto y se ejecutan de forma prácticamente inmediata.
+**La primera consulta de la sesión tarda menos de un minuto** (entre 30 y 50 s según el punto de operación). La primera consulta requiere resolver el caso base con los límites de potencia reactiva. Las consultas posteriores reutilizan el caso resuelto y se ejecutan de forma prácticamente inmediata.
 
 **Se interrumpió un barrido N-1 y se generó un archivo `.parcial.csv`.** El archivo contiene el progreso del barrido interrumpido. El resultado guardado anteriormente no se modifica, por lo que el archivo parcial puede eliminarse si no se necesita conservar ese progreso.

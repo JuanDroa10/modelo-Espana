@@ -1,4 +1,4 @@
-# Modelo red electrica de transporte Español: dinámica de frecuencia y generación detrás del contador del sistema eléctrico ibérico
+# Modelo-Iberia — dinámica de frecuencia y generación detrás del contador del sistema eléctrico ibérico
 
 Modelo de la **red de transporte peninsular española** de 132, 220 y 400 kV, desarrollado sobre [PyPSA](https://pypsa.org/), que incorpora Portugal y Francia como sistemas eléctricos vecinos. Sobre esta representación se implementan cuatro capas principales de análisis:
 
@@ -9,11 +9,11 @@ Modelo de la **red de transporte peninsular española** de 132, 220 y 400 kV, de
 
 El modelo incluye tres puntos de operación preparados para su simulación. Entre ellos se encuentra el **sistema del 28 de abril de 2025 en el instante previo al apagón ibérico**, construido con los datos medidos que publica ENTSO-E para las 12:15 h: generación por tecnología, demanda e intercambios. La generación convencional (nuclear, ciclos combinados, carbón y bombeo) se asigna central a central con el programa P48 del I90 de REE. La respuesta dinámica obtenida para este escenario se compara con el registro de frecuencia medido ese día.
 
-> **Alcance de los resultados.** Los puntos del apagón y de la punta utilizan los totales medidos por ENTSO-E y la generación convencional central a central del I90 de REE, pero el reparto de las renovables y de la demanda entre barras es una estimación del modelo; el escenario genérico es sintético. Ninguno corresponde a un registro completo del estado de la red proporcionado por el operador. Por tanto, permiten estudiar el comportamiento del sistema bajo las hipótesis implementadas, pero no deben interpretarse como una reproducción exacta de las condiciones operativas. Para más detalles, consulta la sección [Alcance del modelo](#alcance-del-modelo).
+> **Alcance de los resultados.** Los puntos del apagón y de la punta utilizan los totales medidos por ENTSO-E y la generación convencional central a central del I90 de REE, pero el reparto de las renovables y de la demanda entre barras es una estimación del modelo; el escenario genérico es sintético. Ninguno corresponde a un registro completo del estado de la red proporcionado por el operador. Por tanto, permiten estudiar el comportamiento del sistema bajo las hipótesis implementadas, pero no deben interpretarse como una reproducción exacta de las condiciones operativas. Para más detalles, véase la sección [Alcance del modelo](#alcance-del-modelo).
 
 ## Requisitos
 
-- **Python 3.11 o superior.** PyPSA 1.x requiere una versión compatible de Python; con las versiones 3.10 y anteriores la instalación no se completa. Comprueba los intérpretes instalados antes de crear el entorno:
+- **Python 3.11 o superior.** PyPSA 1.x requiere una versión compatible de Python; con las versiones 3.10 y anteriores la instalación no se completa. Conviene comprobar los intérpretes instalados antes de crear el entorno:
 
   ```powershell
   py --list          # Windows: intérpretes instalados
@@ -23,7 +23,7 @@ El modelo incluye tres puntos de operación preparados para su simulación. Entr
   python3 --version  # macOS o Linux
   ```
 
-  Si la versión disponible es la 3.10 o anterior, instala una versión más reciente y selecciónala al crear el entorno virtual.
+  Si la versión disponible es la 3.10 o anterior, debe instalarse una versión más reciente y seleccionarse al crear el entorno virtual.
 
 - **Dependencias de Python.** Se instalan a partir de `requirements.txt`. Entre ellas se encuentran PyPSA, pandas, NumPy, SciPy, NetworkX, matplotlib, netCDF4, linopy y HiGHS (solucionador utilizado por el MILP de deslastre), además de folium para la generación del mapa interactivo.
 
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 python menu.py
 ```
 
-Si la activación del entorno mediante `Activate.ps1` falla debido a la política de ejecución (*Execution Policy*), puedes habilitar la ejecución de scripts para la ventana actual de PowerShell y volver a intentarlo:
+Si la activación del entorno mediante `Activate.ps1` falla debido a la política de ejecución (*Execution Policy*), puede habilitarse la ejecución de scripts para la ventana actual de PowerShell y repetir la activación:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
@@ -59,9 +59,9 @@ python menu.py
 Al iniciar, el menú solicita seleccionar el **punto de operación** sobre el que se realizarán los análisis. Esta selección se mantiene durante la sesión hasta que se cambie explícitamente:
 
 ```text
-SOBRE QUE PUNTO DE OPERACION QUIERES TRABAJAR
+PUNTO DE OPERACION SOBRE EL CUAL SE TRABAJA
   1) 28-abr-2025 12:33 (apagon iberico)
-  2) 15-ene 20-21 h (punta invernal nocturna)
+  2) 15-ene-2025 20:45 (punta invernal nocturna)
   3) exportacion generica de 3.000 MW (despacho uniforme)
 ```
 
@@ -123,7 +123,7 @@ python -m tests.verificar_compensacion            # compensación shunt
 python -m tests.verify_pt_fr_flows                # intercambios con Portugal y Francia
 ```
 
-Para reconstruir las redes a partir de los archivos CSV de origen y comprobar que el proceso reproduce los modelos incluidos en el repositorio, ejecuta los siguientes comandos. Ten en cuenta que este procedimiento **reescribe el contenido de `data/redes/`**:
+Para reconstruir las redes a partir de los archivos CSV de origen y comprobar que el proceso reproduce los modelos incluidos en el repositorio, deben ejecutarse los siguientes comandos. Este procedimiento **reescribe el contenido de `data/redes/`**:
 
 ```bash
 python -m tests.test_pipeline_smoke
@@ -173,7 +173,7 @@ resultados/       archivos de salida: CSV, figuras y mapas (se crea automáticam
 - **Escenario de punta:** datos medidos de ENTSO-E del 15 de enero de 2025, de 20:45 a 21:00 (generación por tecnología, demanda de España y Portugal, mezcla de Portugal e intercambios), contrastados con el tiempo real de ESIOS, y el I90 de REE del mismo cuarto. Su balance se cierra con el flujo de cargas, de modo que el nudo de referencia produce su despacho programado.
 - **Contorno geográfico de los mapas:** [Natural Earth](https://www.naturalearthdata.com/), cuyos datos se distribuyen en dominio público.
 
-Si utilizas este modelo en un trabajo académico o una publicación, incluye la referencia al conjunto de datos de Nokandi (2025) y cumple las condiciones de atribución de la licencia CC BY 4.0.
+Si este modelo se utiliza en un trabajo académico o una publicación, debe incluirse la referencia al conjunto de datos de Nokandi (2025) y cumplirse las condiciones de atribución de la licencia CC BY 4.0.
 
 ## Cómo colaborar
 
@@ -187,4 +187,4 @@ Toda contribución de datos debe incluir la fuente correspondiente. Antes de env
 
 ## Licencia
 
-El código se distribuye bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE) para conocer sus condiciones. Los datos del conjunto de Nokandi incluidos en `data/fuentes/` conservan su licencia original, CC BY 4.0; los datos de REE y Natural Earth mantienen sus respectivas condiciones de uso (consulta la sección [Fuentes de datos](#fuentes-de-datos)).
+El código se distribuye bajo la licencia MIT, cuyas condiciones figuran en el archivo [LICENSE](LICENSE). Los datos del conjunto de Nokandi incluidos en `data/fuentes/` conservan su licencia original, CC BY 4.0; los datos de REE y Natural Earth mantienen sus respectivas condiciones de uso (véase la sección [Fuentes de datos](#fuentes-de-datos)).

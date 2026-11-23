@@ -1,25 +1,24 @@
 # menu.py
 """Consola interactiva del modelo iberico.
 
-Reune en un solo sitio todo lo que el modelo sabe hacer, para no tener que
-recordar que modulo y que banderas corresponden a cada cosa.
+Reune en un unico punto de acceso todas las funciones del modelo, sin
+necesidad de recordar que modulo y que banderas corresponden a cada una.
 
     python menu.py
 
-Tiene la misma forma que la consola del modelo del STN colombiano a
-proposito: los dos modelos comparan los mismos analisis sobre dos sistemas
+Tiene deliberadamente la misma forma que la consola del modelo del STN
+colombiano: los dos modelos comparan los mismos analisis sobre dos sistemas
 distintos, y dos consolas iguales hacen que la comparacion sea de los
-SISTEMAS y no de lo que cada consola decidio enseñar.
+SISTEMAS y no de lo que cada consola decidio mostrar.
 
-POR QUE MERECE LA PENA, mas alla de agrupar ordenes: construir y resolver el
-caso base con limites de reactivo cuesta alrededor de 1 min en cualquier
+UTILIDAD, mas alla de agrupar ordenes: construir y resolver el
+caso base con limites de reactivo cuesta entre 30 s y 1 min en cualquier
 punto de operacion. Aqui se construye UNA VEZ por sesion y se reutiliza, de
 modo que preguntar por una barra, por el BTM o por el balance por pais es
 inmediato a partir de la segunda vez.
 
 Las simulaciones largas -barridos N-1, calibraciones- se lanzan en un proceso
-aparte, porque modifican la red y no conviene que contaminen el caso base
-cacheado.
+aparte, porque modifican la red y no deben alterar el caso base cacheado.
 
 Sin dependencias fuera de la libreria estandar y de lo que el modelo ya usa.
 """
@@ -37,10 +36,10 @@ _BASE = {}          # cache del caso base de esta sesion
 
 # Punto de operacion ACTIVO. Se elige al entrar y vale para toda la sesion:
 # tanto para las simulaciones, que se lanzan en otro proceso con --red, como
-# para las consultas, que leen el caso cacheado. Las dos cosas TIENEN que
-# salir del mismo sitio, o el menu enseña consultas de un sistema y
-# simulaciones de otro. (Es el defecto que el menu del STN ya tuvo y corrigio;
-# aqui nace corregido.)
+# para las consultas, que leen el caso cacheado. Ambas DEBEN proceder del
+# mismo origen; de lo contrario, el menu muestra consultas de un sistema y
+# simulaciones de otro. (El menu del STN presento este defecto y lo corrigio;
+# aqui se incorpora corregido desde el inicio.)
 _PUNTO = {'tipo': 'apagon', 'etiqueta': '28-abr-2025 12:33 (apagon iberico)'}
 
 _ESCENARIOS = [
@@ -63,7 +62,7 @@ _ESCENARIOS = [
 # ---------------------------------------------------------------------------
 
 def _c(txt, code):
-    """Color ANSI, solo si la salida es un terminal de verdad."""
+    """Color ANSI, solo si la salida es realmente un terminal."""
     return f"\033[{code}m{txt}\033[0m" if sys.stdout.isatty() else txt
 
 
@@ -87,7 +86,8 @@ def pausa():
 
 
 def confirmar(texto):
-    """Si/no, con NO por defecto: un Enter de mas nunca lanza nada caro."""
+    """Si/no, con NO por defecto: una pulsacion accidental de Enter nunca
+    lanza un proceso costoso en tiempo."""
     try:
         r = input(_c(f"   {texto} [s/N]: ", '93')).strip().lower()
     except EOFError:
@@ -132,10 +132,10 @@ def base(con_limites=True, verbose=True):
     operacion fisicamente valido: deja maquinas produciendo reactivo que
     no pueden entregar.
 
-    Esto es exactamente la trampa que `analisis_n1.caso_base` documenta en
-    su docstring -la red que devuelve y el diagnostico que informa NO son
-    el mismo estado- y la razon de que el menu aplique los limites el
-    mismo en vez de fiarse del diagnostico.
+    Es precisamente la inconsistencia que `analisis_n1.caso_base` documenta
+    en su docstring -la red que devuelve y el diagnostico que informa NO son
+    el mismo estado- y la razon por la que el menu aplica los limites por si
+    mismo en lugar de basarse en el diagnostico.
 
     Devuelve (network, info_del_lazo). La red se entrega SIN copiar: quien
     la vaya a modificar debe llamar a .copy() primero.
@@ -146,14 +146,14 @@ def base(con_limites=True, verbose=True):
             print(_c(f"\n   construyendo {_PUNTO['etiqueta']} "
                      f"(solo la primera vez)...", '90'))
             if _PUNTO['tipo'] == 'punta' and con_limites:
-                print(_c("   la punta tarda alrededor de 1 min: su lazo de "
-                         "reactivo no converge a la primera", '90'))
+                print(_c("   resolviendo el caso base con limites de reactivo "
+                         "(unos 30 s)", '90'))
         t0 = time.time()
         from iberia import analisis_n1 as an
         # `con_limites` de caso_base solo cambia el DIAGNOSTICO que informa,
-        # pero calcularlo cuesta el lazo entero -minutos en la punta-. Si
-        # aqui no se van a aplicar los limites, ese diagnostico se iba a
-        # tirar: no se pide.
+        # pero calcularlo exige el lazo entero -minutos en la punta-. Si
+        # aqui no se van a aplicar los limites, ese diagnostico se
+        # descartaria: no se solicita.
         n, diag = an.caso_base(verbose=False, con_limites=con_limites,
                                red=_PUNTO['tipo'])
         info = {}
@@ -196,10 +196,10 @@ def num_de(fragmento):
 def correr(args):
     """Lanza un modulo del modelo en un proceso aparte.
 
-    SIEMPRE enseña la orden que construyo: un menu que no enseña las
-    banderas que emite es una caja negra, y es asi como sobreviven los
+    SIEMPRE muestra la orden que construye: un menu que no muestra las
+    banderas que emite es una caja negra, y asi es como persisten los
     desajustes entre lo que el menu cree pedir y lo que el modulo
-    entiende."""
+    interpreta."""
     print(_c(f"\n   $ python -m {' '.join(args)}", '90'))
     print()
     t0 = time.time()
@@ -211,7 +211,7 @@ def correr(args):
         return False
     if r.returncode != 0:
         print(_c(f"\n   el modulo termino con codigo {r.returncode}: "
-                 f"la salida de arriba no es un resultado valido", '91'))
+                 f"la salida anterior no es un resultado valido", '91'))
     print(_c(f"\n   ({time.time()-t0:.0f} s)", '90'))
     return r.returncode == 0
 
@@ -225,11 +225,11 @@ def elegir_punto(primera_vez=False):
     """Pide el punto de operacion. Devuelve True si cambio, False si no, y
     None si el usuario sale con `q` (solo en la primera pantalla)."""
     if primera_vez:
-        titulo("SOBRE QUE PUNTO DE OPERACION QUIERES TRABAJAR")
+        titulo("PUNTO DE OPERACION SOBRE EL CUAL SE TRABAJA")
         print()
-        parrafo("Vale para TODA la sesion: las opciones del menu se adaptan al "
-                "punto elegido, y las que no dependen de el se agrupan aparte. "
-                "Se puede cambiar luego con la opcion `p`.")
+        parrafo("Se aplica a TODA la sesion: las opciones del menu se adaptan "
+                "al punto seleccionado, y las que no dependen de el se agrupan "
+                "aparte. Puede cambiarse posteriormente con la opcion `p`.")
         print()
     for i, (clave, etq, aval, color) in enumerate(_ESCENARIOS):
         marca = '*' if clave == _PUNTO['tipo'] else ' '
@@ -268,21 +268,22 @@ def sim_entsoe():
 
 def sim_n1():
     print()
-    parrafo("El barrido completo son 3.277 contingencias. No todas necesitan "
-            "flujo AC: los elementos PUENTE se resuelven por teoria de grafos "
-            "(su salida aisla, no redistribuye) y los generadores pequeños "
-            "por balance. Eso deja unas 2.050 con flujo AC de verdad.")
+    parrafo("El barrido completo consta de 3.277 contingencias. No todas "
+            "requieren flujo AC: los elementos PUENTE se resuelven por teoria "
+            "de grafos (su salida aisla, no redistribuye) y los generadores "
+            "pequeños por balance. Quedan 2.145 en el apagon y 2.068 en la "
+            "punta, que se resuelven con flujo AC completo.")
     print()
-    op = elegir("que quieres hacer", [
+    op = elegir("que se desea hacer", [
         'barrido completo del punto activo  (~40 min apagon / ~30 min punta)',
-        'solo el PLAN: cuantas contingencias de cada clase y cuanto costaria',
+        'solo el PLAN: numero de contingencias de cada clase y coste estimado',
         'una contingencia concreta, elegida por nombre',
         'el ranking de las mas graves del ultimo barrido'])
     if op.startswith('barrido completo'):
         print()
         parrafo("Al TERMINAR, sustituye el barrido guardado de este punto "
                 "(resultados/contingencias_n1_<punto>.csv). Si se "
-                "interrumpe, el guardado no se toca: el progreso va a un "
+                "interrumpe, el barrido guardado se conserva: el progreso va a un "
                 "fichero .parcial aparte.")
         if not confirmar("lanzar el barrido completo?"):
             print(_c("   cancelado", '90'))
@@ -303,8 +304,8 @@ def _una_contingencia(elemento):
     # CRUDA, no conmutada. `analisis_n1.simular` aplica los limites de
     # reactivo POR SU CUENTA, igual que hace el barrido. Pasarle la red que
     # ya paso por el lazo la haria partir de otro estado, y el resultado no
-    # coincidiria con la fila del barrido para ese mismo elemento --- que es
-    # justo para lo que sirve esta opcion.
+    # coincidiria con la fila del barrido para ese mismo elemento, que es
+    # precisamente la finalidad de esta opcion.
     n, _ = base(con_limites=False)
     from iberia import analisis_n1 as an
     if elemento in n.lines.index:
@@ -332,8 +333,8 @@ def _ranking_n1():
         # el barrido propio si lo hay; si no, el de referencia del repositorio
         ruta, _ = an.fuente_n1(red=_PUNTO['tipo'])
     except SystemExit:
-        print(_c(f"\n   no hay barrido para '{_PUNTO['tipo']}'. Correlo "
-                 f"primero con la opcion del barrido completo.", '93'))
+        print(_c(f"\n   no hay barrido para '{_PUNTO['tipo']}'. Ejecutelo "
+                 f"primero mediante la opcion del barrido completo.", '93'))
         return
     d = pd.read_csv(ruta)
     ac = d[d.metodo == 'AC']
@@ -343,13 +344,14 @@ def _ranking_n1():
         unico = conv.elemento_critico.iloc[0]
         print(_c(f"   AVISO: el elemento critico es '{unico}' en LAS "
                  f"{len(conv)} contingencias resueltas.", '93'))
-        parrafo("Eso no es un N-1 midiendo la red: es un defecto del caso "
-                "base repetido una vez por contingencia. El ranking de abajo "
-                "sigue valiendo como severidad RELATIVA, porque cada fila se "
+        parrafo("Esto no refleja un N-1 que mida la red: es un defecto del "
+                "caso base que se repite en cada contingencia. El ranking "
+                "siguiente sigue siendo valido como severidad RELATIVA, porque "
+                "cada fila se "
                 "mide contra la referencia del caso base, pero las "
                 "cargabilidades absolutas no son citables.")
         print()
-    n_mostrar = preguntar("cuantas", 15, int)
+    n_mostrar = preguntar("numero de contingencias a mostrar", 15, int)
     cols = ['tipo', 'elemento', 'carga_max_pct', 'n_sobrecargas',
             'MW_desconectados_iberia', 'severidad']
     print()
@@ -359,15 +361,15 @@ def _ranking_n1():
 
 def sim_frecuencia():
     print()
-    parrafo("Integra la ecuacion de oscilacion tras perder generacion de "
-            "golpe, con los SEIS escalones del P.O. 1.6: dos de bombeo "
+    parrafo("Integra la ecuacion de oscilacion tras una perdida repentina de "
+            "generacion, con los SEIS escalones del P.O. 1.6: dos de bombeo "
             "(49,5 y 49,3 Hz) y cuatro generales (49,0 / 48,7 / 48,4 / "
             "48,0 Hz).")
     s = sistema()
-    mw = preguntar("MW de generacion que se pierden de golpe", 2000.0, float)
+    mw = preguntar("MW de generacion perdidos de forma repentina", 2000.0, float)
     con = elegir("esquema de deslastre",
                  ['activo (P.O. 1.6 completo)',
-                  'activo pero SIN los escalones de bombeo (como Colombia)',
+                  'activo pero SIN los escalones de bombeo (como en Colombia)',
                   'desactivado'])
     from iberia import dinamica_frecuencia as din
     kw = {}
@@ -381,7 +383,7 @@ def sim_frecuencia():
     print(f"      RoCoF inicial        {tr['rocof_inicial']:+.4f} Hz/s")
     print(f"      aporte de primaria   {tr['aporte_primaria']:8.1f} MW")
     print(f"      deslastre de clientes{tr['deslastre_total']:8.1f} MW")
-    print(f"      bombeo soltado       {tr['bombeo_deslastrado']:8.1f} MW")
+    print(f"      bombeo desconectado  {tr['bombeo_deslastrado']:8.1f} MW")
     print()
     for e in tr.get('escalones_bombeo', []):
         est = f"t={e['t_disparo']:.2f} s, {e['mw']:.0f} MW" if e['disparado'] \
@@ -395,10 +397,10 @@ def sim_frecuencia():
 
 def sim_comparar():
     print()
-    op = elegir("que comparo", [
+    op = elegir("que se compara", [
         'todo menos la muestra N-1  (~2 min: resuelve los dos casos base)',
         'con la muestra N-1 de 6 contingencias por escenario  (~37 min)'])
-    # La muestra N-1 es la parte cara, y ademas NO es un analisis N-1: son
+    # La muestra N-1 es la parte mas costosa en tiempo, y ademas NO es un analisis N-1: son
     # las 6 contingencias dirigidas a los elementos mas cargados (ver el
     # analisis). Por defecto se omite.
     correr(['iberia.comparar_escenarios']
@@ -452,8 +454,8 @@ def con_resumen():
     #
     # PERO generacion - demanda DENTRO de Iberia NO son las perdidas: ahi
     # va tambien la EXPORTACION a Francia. Mezclarlas da una cifra de
-    # perdidas inflada (7,8% en el apagon, cuando lo que hay son 2.487 MW
-    # de los que la mayoria cruzan la frontera). Se separan: el
+    # perdidas inflada (6,0 % en el apagon: 1.797 MW, de los que 1.062
+    # cruzan la frontera y solo 735 MW, un 2,45 %, son perdidas). Se separan: el
     # intercambio se mide en las propias lineas transfronterizas.
     cruce = [l for l in n.lines.index
              if (n.lines.at[l, 'bus0'] in ib) != (n.lines.at[l, 'bus1'] in ib)]
@@ -481,10 +483,10 @@ def con_resumen():
     if tercos:
         print()
         print(_c(f"   AVISO: {len(tercos)} generador(es) no se pudieron "
-                 f"meter en su curva de capacidad: {', '.join(tercos)}", '93'))
-        parrafo("El caso base NO esta limpio: hay generadores pidiendo "
+                 f"ajustar a su curva de capacidad: {', '.join(tercos)}", '93'))
+        parrafo("El caso base NO esta limpio: hay generadores que requieren "
                 "reactivo fuera de su curva, y la cargabilidad de este punto "
-                "debe leerse con cuidado.")
+                "debe interpretarse con precaucion.")
     print()
     print("   MEZCLA POR TECNOLOGIA (MW de placa, solo Iberia)")
     ib = n.generators[n.generators.bus.isin(list(es) + list(pt))]
@@ -550,14 +552,14 @@ def con_buscar():
                   + _c(f"{pct:.1f} % de {snom:.0f} MVA",
                        '91' if pct > 100 else '90'))
     if not (buses or gens or lins):
-        print(_c("   nada encontrado", '93'))
+        print(_c("   sin resultados", '93'))
 
 
 def con_btm():
     # Todo lo que hace falta aqui es estatico -placa, despacho, coordenadas y
     # p_set de las cargas-, asi que basta la red que ya leyo el Sistema.
-    # Pedir base() costaba resolver el flujo AC con el lazo de reactivo,
-    # minutos en la punta, para no usar ni un solo valor resuelto.
+    # Invocar base() obligaba a resolver el flujo AC con el lazo de reactivo,
+    # minutos en la punta, sin utilizar ningun valor resuelto.
     n = sistema().network
     from iberia.btm_regional import (produccion_btm_por_bus, capacidad_btm_por_bus,
                               factor_produccion, region_de_bus)
@@ -580,8 +582,8 @@ def con_btm():
           f"(el resto es cogeneracion, sincrona).")
     parrafo("Solo la parte por inversor responde al modo de fallo que se "
             "estudia: desconexion en bloque por hueco de tension. Colombia "
-            "tiene 96,9 % por inversor, asi que a igual penetracion pierde "
-            "mas MW de golpe.")
+            "tiene 96,9 % por inversor, por lo que a igual penetracion pierde "
+            "mas MW de forma simultanea.")
     if float(prod.sum()) < 1e-6:
         print()
         print(_c("   Este punto de operacion es NOCTURNO: el autoconsumo "
@@ -614,7 +616,7 @@ def con_paises():
         print(f"   {p:>8} {gg:9.1f} MW {cc:9.1f} MW {gg-cc:+9.1f} MW "
               f"{len(bs):7d}")
     print()
-    parrafo("Francia son buses AGREGADOS (un generador por tecnologia = toda "
+    parrafo("Francia se representa con buses AGREGADOS (un generador por tecnologia = toda "
             "la flota francesa). No es un modelo de red: sirve de condicion "
             "de contorno y NO debe entrar en ninguna metrica del sistema "
             "iberico. Por eso la inercia y el deslastre excluyen Francia y "
@@ -623,7 +625,7 @@ def con_paises():
 
 def con_cobertura():
     # Solo hace falta el Sistema (lee placa, despacho y tecnologia). Antes
-    # llamaba tambien a base(), que no usaba, y eso costaba resolver el flujo
+    # llamaba tambien a base(), que no usaba, y eso obligaba a resolver el flujo
     # AC con el lazo de reactivo -minutos en la punta- para imprimir una
     # tabla.
     s = sistema()
@@ -670,7 +672,7 @@ def con_cobertura():
 
 def con_escenarios():
     print()
-    parrafo("Los tres puntos de operacion y de donde sale cada uno:")
+    parrafo("Los tres puntos de operacion y la procedencia de cada uno:")
     print()
     for clave, etq, aval, color in _ESCENARIOS:
         print(f"      {_c(clave, '1;96')}  {etq}")
@@ -688,8 +690,9 @@ def con_escenarios():
             "20:45) se construye igual en build_punta_snapshot.py. El tercero "
             "es sintetico.")
     print()
-    parrafo("El apagon es el escenario sobre el que descansan el BTM y el "
-            "deslastre. Ninguno de los dos casos base esta del todo limpio: el "
+    parrafo("El apagon es el escenario en el que se basan los analisis del BTM "
+            "y del deslastre. Ninguno de los dos casos base esta completamente "
+            "limpio: el "
             "apagon tiene L1146 al 104 % (los ciclos de Barcelona estaban "
             "parados) y la punta 9 lineas sobrecargadas.")
 
@@ -747,7 +750,7 @@ MAPAS = [
      'la red sobre fondo cartografico', None,
      ['iberia.visualize_network']),
     ('resultados/visualizaciones/mapa_red_iberia_interactivo.html',
-     'mapa interactivo, en el navegador (necesita internet)', None,
+     'mapa interactivo, en el navegador (requiere conexion a internet)', None,
      ['iberia.visualize_network']),
 ]
 
@@ -806,7 +809,7 @@ def map_abrir():
             print(_c("   opcion no valida", '91'))
             return
     # Los que faltan se generan ANTES de abrir nada, y cada generador una
-    # sola vez: visualize_network produce tres mapas de golpe.
+    # sola vez: visualize_network produce tres mapas en una sola ejecucion.
     faltan = [m for m in elegidos if not os.path.exists(os.path.join(RAIZ, m[0]))]
     if faltan:
         print()
@@ -848,9 +851,9 @@ def map_regenerar_carga():
 #
 #   sobre=PUNTO    la opcion corre sobre el punto elegido
 #   sobre='texto'  NO depende del punto; el texto dice sobre que corre, y la
-#                  opcion se pinta en el bloque "sobre el modelo entero"
+#                  opcion se muestra en el bloque "sobre el modelo entero"
 #   no_aplica      {punto: razon}: en esos puntos la opcion no se ofrece, y
-#                  el menu dice por que en vez de esconderla en silencio
+#                  el menu indica el motivo en lugar de ocultarla sin aviso
 
 PUNTO = None
 
@@ -873,25 +876,25 @@ MENU = [
         "cuanto empeora la cargabilidad maxima y cuanta carga ESPANOLA queda "
         "aislada (los agregados de PT y FR no cuentan). La metrica es incremental a proposito: contada en "
         "absoluto, casi cualquier contingencia hereda las sobrecargas del "
-        "caso base y sale 'con problemas' sin haber causado ninguno."),
+        "caso base y apareceria 'con problemas' sin haberlos causado."),
     _op('Simular', 'Dinamica de frecuencia (P.O. 1.6)', sim_frecuencia,
-        "Integra la ecuacion de oscilacion tras perder generacion de golpe y "
-        "dispara los seis escalones del esquema espanol. Deja elegir si los "
-        "dos escalones de BOMBEO actuan: sin ellos el esquema tiene la misma "
-        "forma que el colombiano, que es como hay que correrlo para "
-        "comparar."),
+        "Integra la ecuacion de oscilacion tras una perdida repentina de "
+        "generacion y dispara los seis escalones del esquema espanol. "
+        "Permite seleccionar si los dos escalones de BOMBEO actuan: sin "
+        "ellos el esquema tiene la misma forma que el colombiano, que es la "
+        "configuracion necesaria para la comparacion."),
     _op('Simular', 'Deslastre con BTM: MILP frente al proporcional',
         sim_btm,
         "El algoritmo central del trabajo. Reparte generacion detras del "
-        "contador por los buses, desconecta de golpe la parte conectada por "
-        "inversor, resuelve un MILP que asigna buses a los escalones del "
-        "P.O. 1.6 teniendo en cuenta cuanta generacion embebida SANA se "
-        "llevaria cada corte, y lo COMPARA con el reparto proporcional "
-        "ciego."),
+        "contador por los buses, desconecta de forma simultanea la parte "
+        "conectada por inversor, resuelve un MILP que asigna buses a los "
+        "escalones del P.O. 1.6 teniendo en cuenta cuanta generacion "
+        "embebida SANA se perderia con cada corte, y lo COMPARA con el "
+        "reparto proporcional ciego."),
     _op('Simular', 'Cascada BTM multironda', sim_cascada,
-        "No supone que el sistema aguanta el primer golpe: encadena la "
-        "caida de BTM con la perturbacion y deja correr la frecuencia hasta "
-        "que el sistema se estabiliza o colapsa."),
+        "No supone que el sistema resiste la primera perturbacion: encadena "
+        "la desconexion del BTM con la perturbacion y simula la evolucion de "
+        "la frecuencia hasta que el sistema se estabiliza o colapsa."),
     _op('Simular', 'Validacion contra la frecuencia medida del 28-A', sim_entsoe,
         "Alimenta el modelo con la secuencia de eventos al milisegundo del "
         "informe final de ENTSO-E y lo compara por fases con la frecuencia "
@@ -907,14 +910,14 @@ MENU = [
                                 "instante real"}),
 
     _op('Consultar', 'Resumen del sistema', con_resumen,
-        "Las cifras de una ojeada: tamaño de la red, balance, tension, "
-        "cargabilidad, inercia y mezcla por tecnologia. Avisa si el caso "
-        "base arrastra generadores fuera de su curva de capacidad."),
+        "Sintesis de las cifras principales: tamaño de la red, balance, "
+        "tension, cargabilidad, inercia y mezcla por tecnologia. Avisa si el "
+        "caso base contiene generadores fuera de su curva de capacidad."),
     _op('Consultar', 'Buscar una barra, generador o linea', con_buscar,
-        "Busca por texto libre y muestra lo que el modelo sabe: tension, "
-        "generacion, carga, lineas conectadas con su flujo y cargabilidad. "
-        "Marca los nudos RADIALES, que es donde se esconden los defectos de "
-        "control de tension."),
+        "Busca por texto libre y muestra la informacion disponible en el "
+        "modelo: tension, generacion, carga, lineas conectadas con su flujo "
+        "y cargabilidad. Marca los nudos RADIALES, que es donde suelen "
+        "localizarse los defectos de control de tension."),
     _op('Consultar', 'El BTM espanol', con_btm,
         "Placa instalada, factor de produccion derivado del propio "
         "snapshot, penetracion sobre la demanda y reparto por region. El "
@@ -930,37 +933,40 @@ MENU = [
 
     _op('Analizar', 'Umbral de penetracion con inversor', ana_umbral,
         "A partir de que penetracion una desconexion masiva de BTM llega a "
-        "disparar el deslastre. Gemelo del analisis titular del STN. Informa "
+        "disparar el deslastre. Equivalente al analisis principal del STN. "
+        "Informa "
         "el umbral de bombeo (49,5 Hz, propio de Espana) y el GENERAL "
         "(49,0 Hz), que es el comparable con Colombia.",
         no_aplica={'punta': _SIN_BTM_NOCHE}),
     _op('Analizar', 'Sensibilidad del umbral', ana_sensibilidad,
-        "Cuanto se mueve el umbral si cambian los supuestos. La fila que "
-        "importa es la ultima: SIN los dos escalones de bombeo, que es como "
-        "esta armado el esquema colombiano.",
+        "Variacion del umbral ante cambios en los supuestos. La fila "
+        "determinante es la ultima: SIN los dos escalones de bombeo, que es "
+        "como esta configurado el esquema colombiano.",
         no_aplica={'punta': _SIN_BTM_NOCHE}),
     _op('Analizar', 'Barrido del peso lambda', ana_lambda,
         "Recorre el peso de la penalizacion por destruir BTM sano. En "
-        "Colombia este barrido tiene un precipicio; en Espana no, pero el "
-        "efecto satura hacia lambda ~ 5.",
+        "Colombia este barrido tiene un precipicio; en Espana no. Ademas, "
+        "frente a la caida del BTM, lambda entre 0,5 y 100 da practicamente "
+        "la misma perdida de BTM sano (774-781 MW).",
         no_aplica={'punta': _SOLO_APAGON, 'escenario': _SOLO_APAGON}),
 
     _op('Mapas', 'Abrir los mapas', map_abrir,
         "Abre los mapas con la aplicacion del sistema: los de este punto y "
         "los del modelo entero, cada uno con su FECHA. Si alguno no existe "
-        "todavia -lo normal la primera vez-, ofrece generarlo en el momento."),
+        "todavia -lo habitual en el primer uso-, ofrece generarlo en ese "
+        "momento."),
     _op('Mapas', 'Regenerar el mapa de carga de este punto',
         map_regenerar_carga,
         "Vuelve a dibujar la cargabilidad de las lineas de este punto. "
-        "Resuelve el caso base con los limites de reactivo: ~1 min en el "
+        "Resuelve el caso base con los limites de reactivo: menos de 1 min en el "
         "punto de operacion elegido.",
         no_aplica={'escenario': "no hay mapa de carga del escenario "
                                 "generico"}),
 
     # ===================== SOBRE EL MODELO ENTERO ========================
     _op('Modelo', 'Comparar los dos escenarios lado a lado', sim_comparar,
-        "Somete el apagon y la punta a las mismas pruebas y los imprime en "
-        "columnas: balance, tensiones, cargabilidad, inercia, la misma "
+        "Somete el apagon y la punta a las mismas pruebas y presenta los "
+        "resultados en columnas: balance, tensiones, cargabilidad, inercia, la misma "
         "perturbacion y una muestra de N-1.",
         sobre='apagon y punta'),
     _op('Modelo', 'Regenerar los mapas del modelo', sim_mapa,
@@ -968,8 +974,8 @@ MENU = [
         "la red con fondo, el interactivo, la inercia instalada y el BTM.",
         sobre='la red, no un punto'),
     _op('Modelo', 'Como se construye cada escenario', con_escenarios,
-        "De donde sale cada uno de los tres puntos de operacion y que aval "
-        "tiene.",
+        "Procedencia de cada uno de los tres puntos de operacion y su nivel "
+        "de respaldo.",
         sobre='los tres puntos'),
 ]
 
@@ -1043,7 +1049,8 @@ def main():
     try:
         import pypsa  # noqa: F401
     except ImportError:
-        print("\n   Faltan las dependencias del modelo. Desde esta carpeta:\n")
+        print("\n   Faltan las dependencias del modelo. Para instalarlas, "
+              "ejecute desde esta carpeta:\n")
         print("      pip install -r requirements.txt\n")
         return 1
     # `python -m iberia...` necesita que el directorio de trabajo sea la raiz
@@ -1064,7 +1071,7 @@ def main():
             print()
             return 0
         if sel in ('q', 'salir', 'exit'):
-            print(_c("\n   hasta luego\n", '90'))
+            print(_c("\n   sesion finalizada\n", '90'))
             return 0
         if sel in ('p', 'punto'):
             titulo("CAMBIAR EL PUNTO DE OPERACION")
@@ -1075,8 +1082,9 @@ def main():
             pausa()
             continue
         if not sel:
-            # un Enter de mas no debe cerrar la sesion: tirarla cuesta
-            # reconstruir el caso base cacheado (~1 min).
+            # una pulsacion accidental de Enter no debe cerrar la sesion:
+            # interrumpirla tiene un coste, reconstruir el caso base
+            # cacheado (~1 min).
             continue
         if not sel.isdigit() or not (1 <= int(sel) <= len(acciones)):
             print(_c("   opcion no valida", '91'))
