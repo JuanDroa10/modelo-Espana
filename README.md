@@ -27,7 +27,7 @@ El modelo incluye tres puntos de operación preparados para su simulación. Entr
 
 - **Dependencias de Python.** Se instalan a partir de `requirements.txt`. Entre ellas se encuentran PyPSA, pandas, NumPy, SciPy, NetworkX, matplotlib, netCDF4, linopy y HiGHS (solucionador utilizado por el MILP de deslastre), además de folium para la generación del mapa interactivo.
 
-## Primeros pasos
+## Instalación y primeros pasos
 
 El repositorio incluye los datos de entrada y las redes ya construidas. Por ello, las simulaciones pueden ejecutarse desde el primer uso sin descargar información adicional ni disponer de conexión a internet. La conexión solo es necesaria para visualizar el fondo cartográfico del mapa interactivo.
 
@@ -76,7 +76,7 @@ Antes de ejecutar una opción, el menú indica el escenario sobre el que trabaja
 
 La [**GUIA_DE_USO.md**](GUIA_DE_USO.md) describe las opciones del menú, sus preguntas, los valores predeterminados y la interpretación de los resultados.
 
-## Comandos
+## Ejecución desde la línea de comandos
 
 Los módulos de análisis también pueden ejecutarse directamente desde la línea de comandos, junto con algunas herramientas que el menú no incluye, como el cálculo de los indicadores del modelo y la ejecución por lotes. Los siguientes comandos deben ejecutarse desde el directorio raíz del repositorio:
 
@@ -108,7 +108,7 @@ Los resultados se almacenan en `resultados/`. Los nombres de los archivos incluy
 
 El repositorio incluye en `data/referencia/` los resultados de los barridos N-1 de los dos escenarios principales. Esto permite consultar los rankings de contingencias y sus figuras sin ejecutar previamente los barridos. Cuando se realiza un nuevo barrido, las consultas posteriores utilizan los resultados generados por esa ejecución.
 
-## Comprobaciones
+## Utilidades y verificaciones
 
 El repositorio incluye las siguientes pruebas para comprobar distintos aspectos del modelo. No forman parte del menú y se ejecutan desde la línea de comandos:
 
@@ -134,7 +134,7 @@ python -m iberia.construccion.dimensionar_trafos --aplicar
 
 Los cuatro pasos deben ejecutarse en el orden indicado. Si alguno falla, no deben ejecutarse los siguientes.
 
-## Estructura
+## Estructura del repositorio
 
 ```text
 menu.py           punto de entrada interactivo
